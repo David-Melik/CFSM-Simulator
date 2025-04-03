@@ -1,6 +1,14 @@
 import yaml
 import argparse
 
+# python -m pip install rich
+from rich.console import Console
+from rich.prompt import Prompt
+from rich.style import Style
+
+# Initialize the console for rich text output
+console = Console()
+
 
 def protocol_file(file_path):
     read_yaml_file(file_path)
@@ -11,22 +19,13 @@ def environment_file(file_path):
 
 
 def read_yaml_file(file_path):
-    """Main function to read and parse the YAML file"""
-    try:
-        # Open the YAML file and read its content
-        with open(file_path, "r") as file:
-            content = yaml.safe_load(file)  # Load and parse the YAML file
+    # Open the YAML file and read its content
+    with open(file_path, "r") as file:
+        content = yaml.safe_load(file)  # Load and parse the YAML file
 
-            # Print the content of the YAML file
-            print("\nContent of the file:")
-            print(content)
-
-    except FileNotFoundError:
-        print(f"Error: The file '{file_path}' was not found.")
-    except yaml.YAMLError as e:
-        print(f"Error parsing YAML file: \n{e}")
-    except Exception as e:
-        print(f"An unexpected error occurred: {e}")
+        # Print the content of the YAML file
+        console.print("\nContent of the file:", style="bold cyan")
+        console.print(content, style="italic green")
 
 
 def main():
@@ -57,14 +56,12 @@ def main():
     try:
         # Check if the protocol file and environment file are the same
         if args.protocol == args.environment:
-            raise ValueError(
-                "Error: Protocol file and environment file cannot be the same."
-            )
+            raise ValueError("Protocol file and environment file cannot be the same.")
         # Validate both files have the correct extension
         for file_path in [args.protocol, args.environment]:
             if not file_path.endswith((".yaml", ".yml")):
                 raise ValueError(
-                    f"Error: The file '{file_path}' is not a valid YAML file (must have .yaml or .yml extension)."
+                    f"The file '{file_path}' is not a valid YAML file (must have .yaml or .yml extension)."
                 )
 
         # Read the protocol YAML file
@@ -74,10 +71,10 @@ def main():
 
     except ValueError as e:
         # Catch invalid file extension or other ValueErrors
-        print(e)
+        console.print(f"[bold red]Error[/bold red]: {e}")
     except Exception as e:
         # Catch any unexpected errors
-        print(f"An unexpected error occurred: {e}")
+        console.print(f"[bold red]Error[/bold red]: {e}")
 
 
 if __name__ == "__main__":
