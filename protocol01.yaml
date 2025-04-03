@@ -1,0 +1,12 @@
+name: John Doe
+age: 30
+is_student: false
+address:
+  street: 123 Main St
+  city: Anytown
+  zip: 12345
+friends:
+  - Jane Smith
+  - Bob Johnson
+  - Alice Brown
+
