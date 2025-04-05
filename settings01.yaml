@@ -1,0 +1,28 @@
+Machine 1:
+  States:
+    - S0
+    - S1
+    - S2
+  Transitions:
+    - from: S0
+      to: S1
+      event: "Event1"
+    - from: S1
+      to: S2
+      event: "Event2"
+    - from: S2
+      to: S0
+      event: "Event3"
+
+# Spécification de la machine 2 (FSM)
+Machine 2:
+  States:
+    - S0
+    - S1
+  Transitions:
+    - from: S0
+      to: S1
+      event: "Event4"
+    - from: S1
+      to: S0
+      event: "Event5"
