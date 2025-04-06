@@ -1,12 +1,24 @@
-Machine 1:
+Machine A:
   Initial_state:
     - "Idle"
 
-Machine 2:
+Machine B:
   Initial_state:
     - "Idle"
 
 Machine 3:
+  Initial_state:
+    - "WaitingForAck"
+
+Machine 4:
+  Initial_state:
+    - "WaitingForAck"
+
+Machine 5:
+  Initial_state:
+    - "WaitingForAck"
+
+Machine 5:
   Initial_state:
     - "WaitingForAck"
 

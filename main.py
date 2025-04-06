@@ -12,6 +12,8 @@ from rich.style import Style
 from rich.table import Table
 from rich.tree import Tree
 
+from display import display_function
+
 # Initialize the console for rich text output
 console = Console()
 
@@ -154,13 +156,13 @@ def settings_read(file_path):
 
         # Print the table with the settings
         console.print(table_settings)
+        return len(content)
 
 
 def validate_settings_file(file_path):
     try:
         with open(file_path, "r") as file:
             content = yaml.safe_load(file)
-
         # Check if there are at least two machines
         if len(content) < 2:
             raise ValueError(
@@ -195,120 +197,17 @@ def read_yaml_file(file_path):
         console.print(content, style="italic green")
 
 
-from rich.console import Console
-from rich.tree import Tree
-
-console = Console()
-
-# Root Tree
-tree = Tree("Renderables", guide_style="bold green")
-
-# Atomic Folder
-atomic_folder = tree.add("Atomic", style="bold cyan")
-
-# Files inside Atomic
-syntax_file = atomic_folder.add("Syntax", style="bold blue")
-markdown_file = atomic_folder.add("Markdown", style="bold blue")
-
-# Adding lines for content (simulating code or markdown content)
-syntax_file.add("class Segment(NamedTuple):", style="dim")
-syntax_file.add("    text: str = ''", style="dim")
-syntax_file.add("    style: Optional[Style] = None", style="dim")
-syntax_file.add("    is_control: bool = False", style="dim")
-
-markdown_file.add("```python\nHello, World!\n```", style="dim")
-markdown_file.add("Markdown all the things", style="dim")
-
-# Containers Folder
-containers_folder = tree.add("Containers", style="bold cyan")
-
-# Files inside Containers
-panels_file = containers_folder.add("Panels", style="bold yellow")
-table_file = containers_folder.add("Table", style="bold yellow")
-
-# Adding content inside panels and table
-panels_file.add("Just a panel", style="dim")
-table_file.add("Released", style="bold")
-table_file.add("Dec 20, 2019", style="dim")
-table_file.add("Star Wars: The Rise of Skywalker", style="dim")
-table_file.add("$952,110,690", style="dim")
-
-# Printing the tree
-console.print(tree)
-
-
-def create_initial_tree():
-    tree = Tree("Protocol", guide_style="bold green")
-
-    # Add machine states (you can use any hierarchy you want)
-    machine_1 = tree.add("Machine 1", style="bold cyan")
-    machine_2 = tree.add("Machine 2", style="bold magenta")
-    machine_3 = tree.add("Machine 3", style="bold yellow")
-
-    # Add states to each machine
-    machine_1.add("Idle", style="dim")
-    machine_1.add("Sending", style="dim")
-
-    machine_2.add("DataSent", style="dim")
-    machine_2.add("WaitingForAck", style="dim")
-
-    machine_3.add("AckReceived", style="dim")
-
-    return tree
-
-
-# Function to simulate a transition (adding an edge/connection)
-def add_transition(tree, from_machine, to_machine, transition_name):
-    # Find the machines
-    from_node = None
-    to_node = None
-
-    # Traverse through the tree to find the correct machine nodes
-    for node in tree.children:
-        if node.label == from_machine:
-            from_node = node
-        if node.label == to_machine:
-            to_node = node
-
-    if from_node and to_node:
-        # Add a transition between the two machines
-        from_node.add(
-            f"Transition to {to_machine}: {transition_name}", style="bold green"
-        )
-
-
-# Function to print and simulate the protocol with transitions
-def simulate_protocol():
-    tree = create_initial_tree()
-
-    # Initial display of the tree
-    console.print(tree)
-    sleep(1)
-
-    # Simulate transitions
-    console.print("\nTransitioning from Machine 1 to Machine 3...")
-    add_transition(tree, "Machine 1", "Machine 3", "SendData")
-    console.print(tree)
-    sleep(1)
-
-    console.print("\nTransitioning from Machine 2 to Machine 3...")
-    add_transition(tree, "Machine 2", "Machine 3", "AckReceived")
-    console.print(tree)
-    sleep(1)
-
-
 # Start the simulation
-def lauch_simulation():
+def lauch_simulation(numberMachine):
     mode = str(input("Select simulation mode (M - Manual | A - Automatic): "))
     if mode == "M" or mode == "m":
-        simulate_protocol()
+        print("manual mod")
+        display_function(numberMachine)
     elif mode == "A" or mode == "a":
         print("work in progress")
-        # Create a rich Text object with style formatting
-
     else:
         console.print("[bold yellow]Please select a valid simulation mode[bold yellow]")
-        lauch_simulation()
+        lauch_simulation(numberMachine)
 
 
 def main():
@@ -352,8 +251,8 @@ def main():
             args.settings
         ):
             protocol_read(args.protocol)
-            settings_read(args.settings)
-            lauch_simulation()
+            numberMachine = settings_read(args.settings)
+            lauch_simulation(numberMachine)
 
     except ValueError as e:
         # Catch invalid file extension or other ValueErrors
