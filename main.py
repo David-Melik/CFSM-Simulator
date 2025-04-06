@@ -12,13 +12,15 @@ from rich.style import Style
 from rich.table import Table
 from rich.tree import Tree
 
-from display import display_function
+from display import affect_display, display_function
+import random
 
 # Initialize the console for rich text output
 console = Console()
 
 
 def protocol_read(file_path):
+    protocol_transitions_tuple = []
     with open(file_path, "r") as file:
         content = yaml.safe_load(file)  # Load and parse the YAML file
 
@@ -48,6 +50,14 @@ def protocol_read(file_path):
                     )
                     event_info.append(transition.get("event", "N/A"))
 
+                    protocol_transitions_tuple.append(
+                        (
+                            transition.get("from"),
+                            transition.get("to"),
+                            transition.get("event"),
+                        )
+                    )
+
             # If there are transitions, join them with a comma. Otherwise, display "No transitions"
             if transition_info:
                 row_content.append(" | ".join(event_info))
@@ -62,6 +72,7 @@ def protocol_read(file_path):
 
         # Print the table with the settings
         console.print(table_protocol)
+    return tuple(protocol_transitions_tuple)
 
 
 def validate_protocol_file(file_path):
@@ -137,7 +148,7 @@ def validate_protocol_file(file_path):
 
 
 def settings_read(file_path):
-
+    machines = []
     # Print the settings in a table
     with open(file_path, "r") as file:
         content = yaml.safe_load(file)  # Load and parse the YAML file
@@ -154,9 +165,11 @@ def settings_read(file_path):
             # Add row to the table
             table_settings.add_row(*row_content)
 
+            # Add machine data as tuple to the list
+            machines.append((machine, initial_state))
         # Print the table with the settings
         console.print(table_settings)
-        return len(content)
+        return tuple(machines)
 
 
 def validate_settings_file(file_path):
@@ -198,16 +211,75 @@ def read_yaml_file(file_path):
 
 
 # Start the simulation
-def lauch_simulation(numberMachine):
+def lauch_simulation(machines_tuple, protocol_transitions_tuple):
     mode = str(input("Select simulation mode (M - Manual | A - Automatic): "))
     if mode == "M" or mode == "m":
         print("manual mod")
-        display_function(numberMachine)
+        display_function(machines_tuple)
+        # here have to check wich transition to choose and wich Tomachine have the required states
+
+        # Randomly select a transition from protocol_transitions_tuple
+        for random_transition in protocol_transitions_tuple:
+            # Extract the transition details
+            initial_state = random_transition[0]
+            to_state = random_transition[1]
+            event = random_transition[2]
+
+            # Print the randomly selected transition
+            # print(f"Random transition: {initial_state} -> {to_state}, Event: {event}")
+
+            # Start selecting random machines
+            match_found = False
+            for _ in range(10):  # Limit the number of trials (10 tries)
+                # Select two random machines from machines_tuple
+                machine_name1, machine_state_1 = random.choice(machines_tuple)
+                machine_name2, machine_state_2 = random.choice(machines_tuple)
+                while (
+                    machine_name2 == machine_name1
+                ):  # Ensure the machines are not the same
+                    machine_name2, machine_state_2 = random.choice(machines_tuple)
+
+                # print(f"Machine 1: {machine_name1} with state: {machine_state_1}")
+                # print(f"Machine 2: {machine_name2} with state: {machine_state_2}")
+
+                # Check if machine 2's state matches the 'to_state' of the transition
+                if machine_state_2 == to_state:
+                    # console.print(
+                    #   f"[bold yellow]Match found![/bold yellow] {machine_name2} state matches transition 'to_state': {to_state}"
+                    # )
+                    match_found = True
+                    break  # Break if match is found
+
+                # else:
+                # print("No match. Trying again...")
+
+            # If no match is found after 10 attempts, move to the next transition
+            # if not match_found:
+            # print(
+            #    f"No match found after 10 attempts for transition: {initial_state} -> {to_state}. Moving to next transition."
+            # )
+            # continue  # Skip to the next transition
+
+            # If a match is found, perform the action and break out of the transition loop
+            fromMachine = machine_name1
+            toMachine = machine_name2
+
+            # Assuming affect_display modifies the machines based on the transition (you may need to implement it)
+
+            break  # Break after processing the transition
+
+        machines_tuple = affect_display(
+            machines_tuple, fromMachine, toMachine, random_transition
+        )
+        # console.print(machines_tuple)
+
+        display_function(machines_tuple)
+
     elif mode == "A" or mode == "a":
         print("work in progress")
     else:
         console.print("[bold yellow]Please select a valid simulation mode[bold yellow]")
-        lauch_simulation(numberMachine)
+        lauch_simulation(machines_tuple, protocol_transitions_tuple)
 
 
 def main():
@@ -250,9 +322,9 @@ def main():
         if validate_protocol_file(args.protocol) and validate_settings_file(
             args.settings
         ):
-            protocol_read(args.protocol)
-            numberMachine = settings_read(args.settings)
-            lauch_simulation(numberMachine)
+            protocol_transitions_tuple = protocol_read(args.protocol)
+            machines_tuple = settings_read(args.settings)
+            lauch_simulation(machines_tuple, protocol_transitions_tuple)
 
     except ValueError as e:
         # Catch invalid file extension or other ValueErrors
