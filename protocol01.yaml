@@ -1,12 +1,28 @@
-name: John Doe
-age: 30
-is_student: false
-address:
-  street: 123 Main St
-  city: Anytown
-  zip: 12345
-friends:
-  - Jane Smith
-  - Bob Johnson
-  - Alice Brown
+
+# protocol01.yaml
+protocol_name: "UDP Protocol"
+
+states:
+  - "Idle"
+  - "Sending"
+  - "DataSent"
+  - "WaitingForAck"
+  - "AckReceived"
+
+transitions:
+  - from: "Idle"
+    to: "Sending"
+    event: "SendData"
+  - from: "Sending"
+    to: "DataSent"
+    event: "DataSent"
+  - from: "DataSent"
+    to: "WaitingForAck"
+    event: "WaitingForAck"
+  - from: "WaitingForAck"
+    to: "AckReceived"
+    event: "AckReceived"
+  - from: "AckReceived"
+    to: "Idle"
+    event: "CycleComplete"
 
