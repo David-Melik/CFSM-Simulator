@@ -7,10 +7,7 @@ python3 -m pip install rich
 python3 -m pip install rich-cli
 """
 from rich.console import Console
-from rich.prompt import Prompt
-from rich.style import Style
 from rich.table import Table
-from rich.tree import Tree
 
 from display import affect_display, display_function
 import random
@@ -214,7 +211,10 @@ def read_yaml_file(file_path):
 def lauch_simulation(machines_tuple, protocol_transitions_tuple):
     mode = str(input("Select simulation mode (M - Manual | A - Automatic): "))
     if mode == "M" or mode == "m":
-        print("manual mod")
+        print("manual mod work in progress")
+
+    elif mode == "A" or mode == "a":
+        print("automatic mode work in proress")
         display_function(machines_tuple)
         # here have to check wich transition to choose and wich Tomachine have the required states
 
@@ -274,9 +274,6 @@ def lauch_simulation(machines_tuple, protocol_transitions_tuple):
         # console.print(machines_tuple)
 
         display_function(machines_tuple)
-
-    elif mode == "A" or mode == "a":
-        print("work in progress")
     else:
         console.print("[bold yellow]Please select a valid simulation mode[bold yellow]")
         lauch_simulation(machines_tuple, protocol_transitions_tuple)
