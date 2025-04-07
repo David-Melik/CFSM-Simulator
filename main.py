@@ -264,8 +264,6 @@ def lauch_simulation(machines_tuple, protocol_transitions_tuple):
             fromMachine = machine_name1
             toMachine = machine_name2
 
-            # Assuming affect_display modifies the machines based on the transition (you may need to implement it)
-
             break  # Break after processing the transition
 
         machines_tuple = affect_display(

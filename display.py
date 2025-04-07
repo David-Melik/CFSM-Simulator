@@ -25,12 +25,11 @@ def align_text(text):
 
 
 def affect_display(machines_tuple, fromMachine, toMachine, transition):
-    initial_state = transition[0]  # from state
-    to_state = transition[1]  # to state (this is the correct state to update)
-    event = transition[2]  # event for logging
+    initial_state = transition[0]
+    to_state = transition[1]
+    event = transition[2]
     print(event)
 
-    # Call the display_link function if needed
     display_link(
         machines_tuple,
         fromMachine,
@@ -42,10 +41,8 @@ def affect_display(machines_tuple, fromMachine, toMachine, transition):
 
     machines_list = list(machines_tuple)
 
-    # Find the machine with the name `fromMachine` and update its state
     for i, (machine_name, machine_state) in enumerate(machines_list):
         if machine_name == fromMachine:
-            # Ensure the state is updated to the correct `to_state` from the transition
             machines_list[i] = (machine_name, to_state)
             # print(f"Updated {machine_name} state to {to_state}")
             break
@@ -64,7 +61,7 @@ def display_link(
     machine_index = None
     for i, (machine_name, state) in enumerate(machines_tuple, start=1):
         if machine_name == fromMachine:
-            machine_index = i  # Store the machine index (1-based)
+            machine_index = i
             break  # Stop once the machine is found
     rowNumber = N_Machine_Row(machine_index)
 
@@ -72,12 +69,12 @@ def display_link(
     console = Console(width=80)
     layout = Layout()  # Create the layout
     numberOfRow = N_Machine_Row(numberMachine)
-    # Split the layout into an upper and lower part
+
     layouts = [Layout(name=f"Row{i}") for i in range(1, numberOfRow + 1)]
-    layout.split_column(*layouts)  # Now split the column using the generated layouts
+    layout.split_column(*layouts)
 
     for i in range(1, numberOfRow + 1):
-        # Split the "lower" part into left and right columns
+
         layout[f"Row{i}"].size = 10
         layout[f"Row{i}"].split_row(
             Layout(name="left"),
@@ -135,13 +132,9 @@ def display_link(
         )
     console.print(layout)
 
-    blockLink01 = (
-        align_text(f"{event}\n---------------->"),
-    )  # The event name and the arrow
+    blockLink01 = (align_text(f"{event}\n---------------->"),)
 
-    blockLink02 = (
-        align_text(f"{event}\n<----------------"),
-    )  # The event name and the arrow
+    blockLink02 = (align_text(f"{event}\n<----------------"),)
 
     blockLink03 = (align_text(f"{event}\n<----------------"),)
     arrow_upper_center = align_text(
