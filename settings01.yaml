@@ -1,24 +1,33 @@
 Machine A:
-  Initial_state:
-    - "Idle"
+  Initial_global_state:
+    - "S1"
+  States:
+    - "S1"
+    - "S2"
+    - "S3"
+  Transitions:
+    - from: "S1"
+      to: "S2"
+      input: "+a"
+      event: "Event name 01"
+    - from: "S2"
+      to: "S3"
+      input: "b+"
+      event: "Event name 02"
 
 Machine B:
-  Initial_state:
-    - "Idle"
-
-Machine 3:
-  Initial_state:
-    - "WaitingForAck"
-
-Machine 4:
-  Initial_state:
-    - "WaitingForAck"
-
-Machine 5:
-  Initial_state:
-    - "WaitingForAck"
-
-Machine 5:
-  Initial_state:
-    - "WaitingForAck"
-
+  Initial_global_state:
+    - "S1"
+  States:
+    - "S1"
+    - "S2"
+    - "S3"
+  Transitions:
+    - from: "S1"
+      to: "S2"
+      input: "+c"
+      event: "Event name 03"
+    - from: "S2"
+      to: "S3"
+      input: "+d"
+      event: "Event name 04"

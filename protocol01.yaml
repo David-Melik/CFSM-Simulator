@@ -2,27 +2,5 @@
 # protocol01.yaml
 protocol_name: "UDP Protocol"
 
-states:
-  - "Idle"
-  - "Sending"
-  - "DataSent"
-  - "WaitingForAck"
-  - "AckReceived"
-
-transitions:
-  - from: "Idle"
-    to: "Sending"
-    event: "SendData"
-  - from: "Sending"
-    to: "DataSent"
-    event: "DataSent"
-  - from: "DataSent"
-    to: "WaitingForAck"
-    event: "WaitingForAck"
-  - from: "WaitingForAck"
-    to: "AckReceived"
-    event: "AckReceived"
-  - from: "AckReceived"
-    to: "Idle"
-    event: "CycleComplete"
-
+# for me we don't need it
+# the table of all machine and it here we select at random

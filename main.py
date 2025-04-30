@@ -73,75 +73,66 @@ def protocol_read(file_path):
 
 
 def validate_protocol_file(file_path):
-    try:
-        with open(file_path, "r") as file:
-            content = yaml.safe_load(file)
+    """try:
+    with open(file_path, "r") as file:
+        content = yaml.safe_load(file)
 
-        # Check for required keys
-        required_keys = ["protocol_name", "states", "transitions"]
-        for key in required_keys:
-            if key not in content:
-                console.print(f"[bold red]Error:[/bold red] Missing key: {key}")
-                return False
+    # Check for required keys
+    required_keys = ["protocol_name", "states", "transitions"]
+    for key in required_keys:
+        if key not in content:
+            console.print(f"[bold red]Error:[/bold red] Missing key: {key}")
+            return False
 
-        # Check if states is a non-empty list
-        states = content["states"]
-        if not isinstance(states, list) or len(states) < 1:
+    # Check if states is a non-empty list
+    states = content["states"]
+    if not isinstance(states, list) or len(states) < 1:
+        console.print(
+            "[bold red]Error:[/bold red] States should be a non-empty list"
+        )
+        return False
+
+    # Check if transitions is a non-empty list
+    transitions = content["transitions"]
+    if not isinstance(transitions, list) or len(transitions) < 1:
+        console.print(
+            "[bold red]Error:[/bold red] Transitions should be a non-empty list"
+        )
+        return False
+
+    # Check for duplicates in states
+    if len(states) != len(set(states)):
+        console.print("[bold red]Error:[/bold red] Duplicate states found")
+        return False
+
+    # Check for states with no transitions
+    state_set = set(states)
+    state_with_no_transitions = [
+        state
+        for state in states
+        if not any(t["from"] == state for t in transitions)
+    ]
+    if state_with_no_transitions:
+        console.print(
+            f"[bold red]Error:[/bold red] States with no transitions: {', '.join(state_with_no_transitions)}"
+        )
+        return False
+
             console.print(
-                "[bold red]Error:[/bold red] States should be a non-empty list"
+                f"[bold red]Error:[/bold red] Event must be a non-empty string in transition: {transition}"
             )
             return False
 
-        # Check if transitions is a non-empty list
-        transitions = content["transitions"]
-        if not isinstance(transitions, list) or len(transitions) < 1:
-            console.print(
-                "[bold red]Error:[/bold red] Transitions should be a non-empty list"
-            )
-            return False
+    # If all checks pass
+    """
+    return True
 
-        # Check for duplicates in states
-        if len(states) != len(set(states)):
-            console.print("[bold red]Error:[/bold red] Duplicate states found")
-            return False
 
-        # Check for states with no transitions
-        state_set = set(states)
-        state_with_no_transitions = [
-            state
-            for state in states
-            if not any(t["from"] == state for t in transitions)
-        ]
-        if state_with_no_transitions:
-            console.print(
-                f"[bold red]Error:[/bold red] States with no transitions: {', '.join(state_with_no_transitions)}"
-            )
-            return False
-
-        # Check each transition for valid from/to states and non-empty events
-        for transition in transitions:
-            if not all(k in transition for k in ["from", "to", "event"]):
-                console.print(
-                    "[bold red]Error:[/bold red] Each transition must contain 'from', 'to', and 'event'"
-                )
-                return False
-            if transition["from"] not in state_set or transition["to"] not in state_set:
-                console.print(
-                    f"[bold red]Error:[/bold red] Invalid state in transition: {transition}"
-                )
-                return False
-            if not isinstance(transition["event"], str) or not transition["event"]:
-                console.print(
-                    f"[bold red]Error:[/bold red] Event must be a non-empty string in transition: {transition}"
-                )
-                return False
-
-        # If all checks pass
-        return True
-
+"""
     except Exception as e:
         console.print(f"[bold red]Error reading protocol file:[/bold red] {e}")
         return False
+    """
 
 
 def settings_read(file_path):
@@ -154,18 +145,64 @@ def settings_read(file_path):
         console.print(f"Imported Settings:", style="bold cyan")
         table_settings = Table(show_header=True, header_style="bold cyan")
         table_settings.add_column("Machine name", style="dim", width=12)
-        table_settings.add_column("Inital state")
+        table_settings.add_column("Inital global state")
+        table_settings.add_column("All possible state", style="dim", width=20)
+        table_settings.add_column("Transition")
 
         for machine, machine_data in content.items():
-            initial_state = ", ".join(machine_data["Initial_state"])
-            row_content = [machine, initial_state]
-            # Add row to the table
-            table_settings.add_row(*row_content)
+            initial_global_state = ", ".join(machine_data["Initial_global_state"])
+            row_content = [machine]
+            row_content.append(initial_global_state)
+            # -----
+            states = ", ".join(machine_data["States"])
+            row_content.append(states)
+            transitions = machine_data["Transitions"]
 
-            # Add machine data as tuple to the list
-            machines.append((machine, initial_state))
-        # Print the table with the settings
+            # Create the row content for each state
+            # Find all transitions where the 'from' state is the current state
+            transition_info = []
+            i = 1
+
+            for transition in transitions:
+
+                if i > 1:
+                    transition_info = []
+                    row_content = []
+                    row_content.append("")
+                    row_content.append("")
+                    row_content.append("")
+
+                transition_info.append(transition.get("event", "N/A"))
+                transition_info.append(transition.get("input", "N/A"))
+                transition_info.append(
+                    f"({transition.get('from')} -> {transition.get('to')})"
+                )
+
+                # protocol_transitions_tuple.append(
+                #     (
+                #         transition.get("from"),
+                #         transition.get("to"),
+                #         transition.get("input"),
+                #         transition.get("event"),
+                #     )
+                # )
+
+                # If there are transitions, join them with a comma. Otherwise, display "No transitions"
+                if transition_info:
+                    row_content.append(" | ".join(transition_info))
+
+                else:
+                    row_content.append("No transitions")
+                i = i + 1
+
+                table_settings.add_row(*row_content)
+                # Print the table with the settings
         console.print(table_settings)
+        # Add row to the table
+
+        # Add machine data as tuple to the list
+        # Print the table with the settings
+
         return tuple(machines)
 
 
@@ -173,7 +210,8 @@ def validate_settings_file(file_path):
     try:
         with open(file_path, "r") as file:
             content = yaml.safe_load(file)
-        # Check if there are at least two machines
+            # Check if there are at least two machines if len(content) < 2:
+            # Check if there are at least two machines
         if len(content) < 2:
             raise ValueError(
                 "There must be at least two machines in the settings file."
@@ -181,11 +219,11 @@ def validate_settings_file(file_path):
 
         # Check that every machine has at least one initial state
         for machine_name, machine_data in content.items():
-            if "Initial_state" not in machine_data:
+            if "Initial_global_state" not in machine_data:
                 raise ValueError(
-                    f"Machine '{machine_name}' is missing an 'Initial_state'."
+                    f"Machine '{machine_name}' is missing an 'initial_global_state'."
                 )
-            if not machine_data["Initial_state"]:
+            if not machine_data["Initial_global_state"]:
                 raise ValueError(
                     f"Machine '{machine_name}' has no initial state defined."
                 )
@@ -221,12 +259,12 @@ def lauch_simulation(machines_tuple, protocol_transitions_tuple):
         # Randomly select a transition from protocol_transitions_tuple
         for random_transition in protocol_transitions_tuple:
             # Extract the transition details
-            initial_state = random_transition[0]
+            initial_global_state = random_transition[0]
             to_state = random_transition[1]
             event = random_transition[2]
 
             # Print the randomly selected transition
-            # print(f"Random transition: {initial_state} -> {to_state}, Event: {event}")
+            # print(f"Random transition: {initial_global_state} -> {to_state}, Event: {event}")
 
             # Start selecting random machines
             match_found = False
@@ -256,7 +294,7 @@ def lauch_simulation(machines_tuple, protocol_transitions_tuple):
             # If no match is found after 10 attempts, move to the next transition
             # if not match_found:
             # print(
-            #    f"No match found after 10 attempts for transition: {initial_state} -> {to_state}. Moving to next transition."
+            #    f"No match found after 10 attempts for transition: {initial_global_state} -> {to_state}. Moving to next transition."
             # )
             # continue  # Skip to the next transition
 
