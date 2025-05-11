@@ -14,6 +14,10 @@ Machine A:
       to: "S3"
       input: "b+"
       event: "Event name 02"
+    - from: "S3"
+      to: "S1"
+      input: "c+"
+      event: "Back to before"
 
 Machine B:
   Initial_global_state:
@@ -31,3 +35,7 @@ Machine B:
       to: "S3"
       input: "+d"
       event: "Event name 04"
+    - from: "S3"
+      to: "S3"
+      input: "+d"
+      event: "Back to before"
