@@ -4,12 +4,13 @@ from rich.panel import Panel
 from rich.text import Text
 from rich.align import Align
 
+console = Console()
 
-def N_Machine_Row(n):
-    if n % 2 == 0:
-        return n // 2
-    elif n % 2 != 0:
-        return (n + 1) // 2
+
+# Helper definition
+def linkSeperation(States, settings):
+    # from "states" check how to is refered
+    return True
 
 
 def even(n):
@@ -24,154 +25,95 @@ def align_text(text):
     return text
 
 
-def affect_display(machines_tuple, fromMachine, toMachine, transition):
-    initial_state = transition[0]
-    to_state = transition[1]
-    event = transition[2]
-    print(event)
+# show every machine withe actual states on !
+def displayFSM(machines):
 
-    display_link(
-        machines_tuple,
-        fromMachine,
-        toMachine,
-        initial_state,
-        to_state,
-        event,
-    )
+    # intial state
 
-    machines_list = list(machines_tuple)
+    for machine, data in machines:
+        transitions = data["Transitions"]
+        console.print(f"FSM: {machine}", style="bold cyan")
+        initialState = " ".join(data["Initial_global_state"])
+        allStates = data["States"]
+        focusState = initialState
+        allStates.remove(focusState)  # Remove 'S1' from wherever it is
+        allStates.insert(0, focusState)  # Reinsert 'S1' at index 0
 
-    for i, (machine_name, machine_state) in enumerate(machines_list):
-        if machine_name == fromMachine:
-            machines_list[i] = (machine_name, to_state)
-            # print(f"Updated {machine_name} state to {to_state}")
-            break
+        numberOfRow = 1
 
-    # Convert the list back to a tuple
-    machines_tuple = tuple(machines_list)
+        while (
+            len(allStates) != 0
+        ):  # allow to know for all states, how much transitions they have and to who !
+            focusState = allStates[0]
 
-    return machines_tuple
+            transitionTo = []
+            possibleInput = []
 
+            allStates.remove(focusState)
 
-def display_link(
-    machines_tuple, fromMachine, toMachine, initial_state, to_state, event
-):
-    print(f"{to_state}")
-    print(machines_tuple)
-    machine_index = None
-    for i, (machine_name, state) in enumerate(machines_tuple, start=1):
-        if machine_name == fromMachine:
-            machine_index = i
-            break  # Stop once the machine is found
-    rowNumber = N_Machine_Row(machine_index)
+            console.print(f"the focus state is [orange1]{focusState}[/orange1]")
 
-    numberMachine = len(machines_tuple)
-    console = Console(width=80)
-    layout = Layout()  # Create the layout
-    numberOfRow = N_Machine_Row(numberMachine)
+            for transition in transitions:
+                console.print(f"allstate list {allStates}")
 
-    layouts = [Layout(name=f"Row{i}") for i in range(1, numberOfRow + 1)]
-    layout.split_column(*layouts)
-
-    for i in range(1, numberOfRow + 1):
-
-        layout[f"Row{i}"].size = 10
-        layout[f"Row{i}"].split_row(
-            Layout(name="left"),
-            Layout(name="center"),
-            Layout(name="right"),
-        )
-    j = 0
-    for i in range(1, numberOfRow + 1):
-        if j != numberMachine:
-
-            machine_name, machine_state = machines_tuple[j]
-            layout[f"Row{i}"]["left"].update(
-                Panel(
-                    align_text(
-                        f"{machine_name}\n[bold yellow]state[/bold yellow]: {machine_state}"
+                if transition.get("from") == focusState:
+                    transitionTo.append(
+                        f"{transition.get('to')} with {transition.get('input')}"
                     )
+                    possibleInput.append(f"{transition.get('input')}")
+            if len(allStates) == 0:
+                console.print(
+                    f"[orange1]╰─>[/orange1] For {focusState} it can [orange1] go back to inital states [/orange1]{transitionTo} so the possible input are {possibleInput}"
                 )
-            )
-            j = j + 1
-            layout[f"Row{i}"]["center"].update(Text(""))
-        if j != numberMachine:
-
-            machine_name, machine_state = machines_tuple[j]
-            layout[f"Row{i}"]["right"].update(
-                Panel(
-                    align_text(
-                        f"{machine_name}\n[bold yellow]state[/bold yellow]: {machine_state}"
-                    )
+            else:
+                console.print(
+                    f"[orange1]╰─>[/orange1] For {focusState}  it can go to  {transitionTo} so the possible input are {possibleInput}"
                 )
-            )
-            j = j + 1
+                # console.print(allStates)
 
-    if numberMachine < numberOfRow * 2:
-        layout[f"Row{numberOfRow}"]["right"].update(Text(""))
-    if j == machine_index:
-        if even(machine_index):
-            # droite
-            layout[f"Row{rowNumber}"]["right"].update(
-                Panel(
-                    align_text(
-                        f"{toMachine}\nFrom [bold yellow]{initial_state}[/bold yellow] state to:\n➔ [bold green]{to_state}[/bold green]"
-                    ),
-                    border_style="bold yellow",
-                )
-            )
-    else:
-        # gauche
-        layout[f"Row{rowNumber}"]["left"].update(
-            Panel(
-                align_text(
-                    f"{toMachine}\nFrom [bold yellow]{initial_state}[/bold yellow] state to:\n➔ [bold green]{to_state}[/bold green]"
-                ),
-                border_style="bold yellow",
-            )
-        )
-    console.print(layout)
+            numberOfRow += 1
 
-    blockLink01 = (align_text(f"{event}\n---------------->"),)
+    # ┼ > ─ ╭ ╰ ╮ ╯
+    #
 
-    blockLink02 = (align_text(f"{event}\n<----------------"),)
+    # then the from inital state -> to states
 
-    blockLink03 = (align_text(f"{event}\n<----------------"),)
-    arrow_upper_center = align_text(
-        Text(
-            "---------------->\ntransition 1",
-            style="bold cyan",
-        )
-    )
+    # repeat the next state -> to sate
+    display_function(machines)
+    return True
 
-    # layout["Row1"]["center"].update(arrow_upper_center)
 
-    link_down_left = align_text(Text("|\n|\n|\n|\n|\n----->\n Transition 2"))
+def Channels(Machine, content):
+    return True
 
-    # Put content inside the "left" part of "lower"
-    # layout["Row2"]["center"].update(link_down_left)
-    link_down_right = align_text(
-        Text("    |\n    |\n    |\n    |\n    |    \n<----\n Transition 2")
-    )
-    # Put content inside the "right" part of "lower"
-    layout["Row2"]["center"].update(blockLink01)
-    # Print the layout
+
+def displayTablePossibility(settings):
+    return True
+
+
+def changeStateFSM(machine, states, settings):
 
     return True
 
 
+# ----------------------------
+
+
 def display_function(machines_tuple):
     numberMachine = len(machines_tuple)
+
     console = Console(width=80)
     layout = Layout()  # Create the layout
-    numberOfRow = N_Machine_Row(numberMachine)
+    numberOfRow = 3
     # Split the layout into an upper and lower part
     layouts = [Layout(name=f"Row{i}") for i in range(1, numberOfRow + 1)]
     layout.split_column(*layouts)  # Now split the column using the generated layouts
 
+    console.print(numberOfRow)
+
     for i in range(1, numberOfRow + 1):
         # Split the "lower" part into left and right columns
-        layout[f"Row{i}"].size = 10
+        layout[f"Row{i}"].size = 5
         layout[f"Row{i}"].split_row(
             Layout(name="left"),
             Layout(name="center"),
@@ -183,9 +125,8 @@ def display_function(machines_tuple):
             machine_name, machine_state = machines_tuple[j]
             layout[f"Row{i}"]["left"].update(
                 Panel(
-                    align_text(
-                        f"{machine_name}\n[bold yellow]state[/bold yellow]: {machine_state}"
-                    )
+                    align_text(f"[bold yellow]state[/bold yellow]: hey1"),
+                    padding=(0, 0),
                 )
             )
             j = j + 1
@@ -194,9 +135,8 @@ def display_function(machines_tuple):
             machine_name, machine_state = machines_tuple[j]
             layout[f"Row{i}"]["right"].update(
                 Panel(
-                    align_text(
-                        f"{machine_name}\n[bold yellow]state[/bold yellow]: {machine_state}"
-                    )
+                    align_text(f"[bold yellow]state[/bold yellow]: hey2"),
+                    padding=(0, 0),
                 )
             )
             j = j + 1

@@ -1,6 +1,6 @@
 Machine A:
   Initial_global_state:
-    - "S1"
+    - "S2"
   States:
     - "S1"
     - "S2"
@@ -10,6 +10,10 @@ Machine A:
       to: "S2"
       input: "+a"
       event: "Event name 01"
+    - from: "S1"
+      to: "S2"
+      input: "+b"
+      event: "Event name special"
     - from: "S2"
       to: "S3"
       input: "b+"
@@ -36,6 +40,6 @@ Machine B:
       input: "+d"
       event: "Event name 04"
     - from: "S3"
-      to: "S3"
+      to: "S1"
       input: "+d"
       event: "Back to before"

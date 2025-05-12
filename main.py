@@ -9,7 +9,7 @@ python3 -m pip install rich-cli
 from rich.console import Console
 from rich.table import Table
 
-from display import affect_display, display_function
+from display import *
 import random
 
 # Initialize the console for rich text output
@@ -216,8 +216,21 @@ def settings_read(file_path):
                 )
         # Print the table
         console.print(table_settings)
-
         return tuple(machines)
+
+
+def update_machine_file(file_path):
+    machines = file_path
+    updated_machines = []
+    for name, data in machines:
+        data["actual_states"] = data[
+            "Initial_global_state"
+        ]  # put the actual states by the values of the inital states
+        updated_machines.append((name, data))
+
+    # Optional: print to verify
+    # console.print(updated_machines)
+    return updated_machines
 
 
 def validate_settings_file(file_path):
@@ -247,11 +260,6 @@ def validate_settings_file(file_path):
     except ValueError as e:
         console.print(f"[bold red]Error in settings files[/bold red]: {e}")
         return False
-
-
-def checkInfinteFSM(file_path):
-    console.print(file_path)
-    return True
 
 
 def read_yaml_file(file_path):
@@ -376,7 +384,10 @@ def main():
         ):
             protocol_transitions_tuple = protocol_read(args.protocol)
             machines_tuple = settings_read(args.settings)
-            checkInfinteFSM(machines_tuple)
+            machines_tuple = update_machine_file(machines_tuple)
+
+            displayFSM(machines_tuple)
+
         # lauch_simulation(machines_tuple, protocol_transitions_tuple)
 
     except ValueError as e:
