@@ -1,6 +1,6 @@
 Machine A:
   Initial_global_state:
-    - "S2"
+    - "S1"
   States:
     - "S1"
     - "S2"

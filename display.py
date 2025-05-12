@@ -60,7 +60,7 @@ def displayFSM(machines):
 
                 if len(transitionTo) > 1:
                     console.print(
-                        f"|their is {len(transitionTo)} transitions possibles|"
+                        f"⚠️ their is {len(transitionTo)} transitions possibles ⚠️"
                     )
                     for transition in transitionToFiltered:
                         transitionCount = 0
@@ -68,8 +68,38 @@ def displayFSM(machines):
                         console.print(
                             f"[green]─>[/green]their is {transitionCount} transitions possibles to go to {transition}"
                         )
+                    selectTransition = str(
+                        input(
+                            f"Select the following state of the next transition you want to go (eg: S2): "
+                        )
+                    )
+                    if selectTransition in transitionToFiltered:
+                        console.print(
+                            f"[green]✔️ You selected a valid transition: {selectTransition}[/green]"
+                        )
 
-                focusState = transitionTo[0]
+                        for transition in transitionToFiltered:
+                            transitionCount = 0
+                            transitionCount = transitionTo.count(transition)
+                            console.print(
+                                f"[green]─>[/green]their is {transitionCount} transitions possibles to go to {transition}"
+                            )
+                            if transition == selectTransition:
+                                selectTransitionCount = transitionCount
+
+                        if selectTransitionCount > 1:
+                            console.print(
+                                f"Their are multiple way to go to {selectTransition} Select the following transition you want to use by their input (eg: a+):"
+                            )
+
+                        focusState = selectTransition
+                    else:
+                        console.print(
+                            f"[red]❌ '{selectTransition}' is not a valid option. Valid options: {transitionToFiltered}[/red]"
+                        )
+
+                else:
+                    focusState = transitionTo[0]
             # focusState = transitionTo[0]
 
             transitionTo = []
@@ -109,16 +139,22 @@ def displayFSM(machines):
             j = j - 1
 
             # till infinity
+
             if j == 0:
-                print("hey", initialState)
-                focusState = initialState
-                console.print(saveAllStates)
-                allStates = saveAllStates.copy()
-                allStates.remove(focusState)  # Remove 'S1' from wherever it is
-                allStates.insert(0, focusState)  # Reinsert 'S1' at index 0
-                i = 0
-                j = len(allStates) + 1
-                time.sleep(0.5)
+                continueSimulation = str(
+                    input(
+                        "Continue the simulation (y)/(n) -> go to next machine or stop if none is left): "
+                    )
+                )
+                if continueSimulation == "y":
+                    print("hey", initialState)
+                    focusState = initialState
+                    console.print(saveAllStates)
+                    allStates = saveAllStates.copy()
+                    allStates.remove(focusState)  # Remove 'S1' from wherever it is
+                    allStates.insert(0, focusState)  # Reinsert 'S1' at index 0
+                    i = 0
+                    j = len(allStates) + 1
 
     # ┼ > ─ ╭ ╰ ╮ ╯
     #
