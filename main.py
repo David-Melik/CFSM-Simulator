@@ -226,10 +226,11 @@ def update_machine_file(file_path):
         data["actual_states"] = data[
             "Initial_global_state"
         ]  # put the actual states by the values of the inital states
+        data["channel"] = []
         updated_machines.append((name, data))
 
     # Optional: print to verify
-    # console.print(updated_machines)
+    console.print(updated_machines)
     return updated_machines
 
 

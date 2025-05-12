@@ -79,29 +79,46 @@ def displayFSM(machines):
                         )
                         possibleInputMultiple = []
                         selectTransitionCount = 0
+
                         for transition in transitions:
                             if (
                                 transition.get("from") == focusState
                                 and transition.get("to") == selectTransition
                             ):
                                 selectTransitionCount = selectTransitionCount + 1
-
-                                console.print(
-                                    f"[green]─>[/green] possible with inputs {transition.get('input')}"
-                                )
                                 possibleInputMultiple.append(
                                     f"{transition.get('input')}"
                                 )
 
                         if selectTransitionCount > 1:
-
-                            selectOfMultipleTransition = str(
-                                input(
-                                    f"Their are multiple way to go to {selectTransition} Select the following transition you want to use by their input (eg: a+):"
+                            for i in possibleInputMultiple:
+                                console.print(
+                                    f"[green]─>[/green] possible with inputs {i}"
                                 )
+
+                            while True:
+                                selectOfMultipleTransition = str(
+                                    input(
+                                        f"Their are multiple way to go to {selectTransition} Select the following transition you want to use by their input (eg: a+):"
+                                    )
+                                )
+                                if selectOfMultipleTransition in possibleInputMultiple:
+                                    console.print(
+                                        f"[green]✔️ You selected a valid inputs: {selectOfMultipleTransition}[/green]"
+                                    )
+                                    console.print(
+                                        "will be added in the channel of the machine"
+                                    )  # channel add it
+                                    break
+                                else:
+                                    console.print(
+                                        f"[red]❌ '{selectOfMultipleTransition}' is not a valid option. Valid options: {possibleInputMultiple}[/red]"
+                                    )
+                        else:
+                            console.print(
+                                f"we use the only input available {possibleInputMultiple}"
                             )
-                            if selectOfMultipleTransition in possibleInputMultiple:
-                                channel add it
+                            console.print("will be added in the channel of the machine")
 
                         focusState = selectTransition
                     else:
