@@ -3,6 +3,8 @@ from rich.layout import Layout
 from rich.panel import Panel
 from rich.text import Text
 from rich.align import Align
+import time
+
 
 console = Console()
 
@@ -34,44 +36,89 @@ def displayFSM(machines):
         transitions = data["Transitions"]
         console.print(f"FSM: {machine}", style="bold cyan")
         initialState = " ".join(data["Initial_global_state"])
-        allStates = data["States"]
+        allStates = data["States"].copy()
+        saveAllStates = data["States"].copy()
+
         focusState = initialState
         allStates.remove(focusState)  # Remove 'S1' from wherever it is
         allStates.insert(0, focusState)  # Reinsert 'S1' at index 0
 
-        numberOfRow = 1
+        i = 0
+        j = len(allStates) + 1
 
         while (
-            len(allStates) != 0
+            j != 0
         ):  # allow to know for all states, how much transitions they have and to who !
-            focusState = allStates[0]
+            if i == 0:
+                focusState = allStates[0]
+            else:
+                console.print(transitionTo)
+                transitionToFiltered = []
+                transitionToFiltered = list(
+                    dict.fromkeys(transitionTo)
+                )  # remove duplicates
+
+                if len(transitionTo) > 1:
+                    console.print(
+                        f"|their is {len(transitionTo)} transitions possibles|"
+                    )
+                    for transition in transitionToFiltered:
+                        transitionCount = 0
+                        transitionCount = transitionTo.count(transition)
+                        console.print(
+                            f"[green]─>[/green]their is {transitionCount} transitions possibles to go to {transition}"
+                        )
+
+                focusState = transitionTo[0]
+            # focusState = transitionTo[0]
 
             transitionTo = []
+            transitionToDisplay = []
             possibleInput = []
-
-            allStates.remove(focusState)
+            i = i + 1
 
             console.print(f"the focus state is [orange1]{focusState}[/orange1]")
 
+            # console.print(f"here allstates {allStates} and try to remove {focusState}")
+            focusState = focusState.strip()
+
+            if focusState in allStates:
+                allStates.remove(focusState)
+            # else:
+            # console.print(f"[red]⚠️ '{focusState}' not found in {allStates}[/red]")
+
             for transition in transitions:
-                console.print(f"allstate list {allStates}")
 
                 if transition.get("from") == focusState:
-                    transitionTo.append(
+                    transitionToDisplay.append(
                         f"{transition.get('to')} with {transition.get('input')}"
                     )
+                    transitionTo.append(f"{transition.get('to')}")
                     possibleInput.append(f"{transition.get('input')}")
+
             if len(allStates) == 0:
                 console.print(
-                    f"[orange1]╰─>[/orange1] For {focusState} it can [orange1] go back to inital states [/orange1]{transitionTo} so the possible input are {possibleInput}"
+                    f"[orange1]╰─>[/orange1] For {focusState} it can [orange1] go back to inital states [/orange1]{transitionToDisplay} so the possible input are {possibleInput}"
                 )
             else:
                 console.print(
-                    f"[orange1]╰─>[/orange1] For {focusState}  it can go to  {transitionTo} so the possible input are {possibleInput}"
+                    f"[orange1]╰─>[/orange1] For {focusState}  it can go to  {transitionToDisplay} so the possible input are {possibleInput}"
                 )
                 # console.print(allStates)
 
-            numberOfRow += 1
+            j = j - 1
+
+            # till infinity
+            if j == 0:
+                print("hey", initialState)
+                focusState = initialState
+                console.print(saveAllStates)
+                allStates = saveAllStates.copy()
+                allStates.remove(focusState)  # Remove 'S1' from wherever it is
+                allStates.insert(0, focusState)  # Reinsert 'S1' at index 0
+                i = 0
+                j = len(allStates) + 1
+                time.sleep(0.5)
 
     # ┼ > ─ ╭ ╰ ╮ ╯
     #
