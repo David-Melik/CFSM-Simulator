@@ -223,7 +223,7 @@ def update_machine_file(file_path):
     machines = file_path
     updated_machines = []
     for name, data in machines:
-        data["actual_states"] = data[
+        data["actual_state"] = data[
             "Initial_global_state"
         ]  # put the actual states by the values of the inital states
         data["channel"] = []

@@ -122,9 +122,13 @@ def displayFSM(machines):
                                         console.print(
                                             f"[green]✔️ You selected a valid inputs: {selectOfMultipleTransition}[/green]"
                                         )
+
                                         console.print(
                                             "will be added in the channel of the machine"
                                         )  # channel add it
+                                        data["channel"].append(
+                                            selectOfMultipleTransition
+                                        )
                                         break
                                     else:
                                         # here it mean was not a correct input
@@ -139,12 +143,14 @@ def displayFSM(machines):
                                 console.print(
                                     "will be added in the channel of the machine"
                                 )
+                                data["channel"].append(possibleInputMultiple)
 
                             # for case (one input/multiple input) when choosen apply the choice
                             focusState = selectTransition
                             data["actual_state"] = selectTransition
                             test = data["actual_state"]
                             console.print(f"actual_state: {test}")
+
                         else:
                             # here mean that the state choosen is not correct
                             console.print(
@@ -155,8 +161,11 @@ def displayFSM(machines):
                     else:
                         focusState = transitionTo[0]
                         data["actual_state"] = focusState
-                        test = data["actual_state"]
-                        console.print(f"actual_state: {test}")
+                        tmp = data["actual_state"]
+                        console.print(f"actual_state: {tmp} {focusState}")
+                        data["channel"].append(possibleInput[0])
+
+                console.print(machines)
 
                 transitionTo = []
                 transitionToDisplay = []
