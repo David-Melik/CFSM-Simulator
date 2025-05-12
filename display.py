@@ -77,20 +77,31 @@ def displayFSM(machines):
                         console.print(
                             f"[green]✔️ You selected a valid transition: {selectTransition}[/green]"
                         )
+                        possibleInputMultiple = []
+                        selectTransitionCount = 0
+                        for transition in transitions:
+                            if (
+                                transition.get("from") == focusState
+                                and transition.get("to") == selectTransition
+                            ):
+                                selectTransitionCount = selectTransitionCount + 1
 
-                        for transition in transitionToFiltered:
-                            transitionCount = 0
-                            transitionCount = transitionTo.count(transition)
-                            console.print(
-                                f"[green]─>[/green]their is {transitionCount} transitions possibles to go to {transition}"
-                            )
-                            if transition == selectTransition:
-                                selectTransitionCount = transitionCount
+                                console.print(
+                                    f"[green]─>[/green] possible with inputs {transition.get('input')}"
+                                )
+                                possibleInputMultiple.append(
+                                    f"{transition.get('input')}"
+                                )
 
                         if selectTransitionCount > 1:
-                            console.print(
-                                f"Their are multiple way to go to {selectTransition} Select the following transition you want to use by their input (eg: a+):"
+
+                            selectOfMultipleTransition = str(
+                                input(
+                                    f"Their are multiple way to go to {selectTransition} Select the following transition you want to use by their input (eg: a+):"
+                                )
                             )
+                            if selectOfMultipleTransition in possibleInputMultiple:
+                                channel add it
 
                         focusState = selectTransition
                     else:
@@ -162,7 +173,7 @@ def displayFSM(machines):
     # then the from inital state -> to states
 
     # repeat the next state -> to sate
-    display_function(machines)
+    # display_function(machines)
     return True
 
 
