@@ -33,7 +33,7 @@ def displayFSM(machines):
     try:
         for machine, data in machines:
 
-            console.print(f"FSM: {machine}", style="bold cyan")
+            console.print(f"[bold blue]FSM: {machine}[/bold blue]")
 
             transitions = data["Transitions"]
             initialState = " ".join(data["Initial_global_state"])
@@ -47,6 +47,10 @@ def displayFSM(machines):
 
             i = 0
             j = len(allStates) + 1
+            type = 0
+            # type 1 -> one transition was available
+            # type 2 -> multiple transition was available and the selected one has only one input
+            # type 3 -> multiple transition was available and the selected one has multiple inputs available
 
             while (
                 j != 0
@@ -66,25 +70,26 @@ def displayFSM(machines):
                     # when you have multiple transition for the next action
                     if len(transitionTo) > 1:
                         console.print(
-                            f"⚠️ Their is {len(transitionTo)} transitions possibles ⚠️"
+                            f"⚠️  Multiple transitions detected ({len(transitionTo)})"
                         )
                         # check how much transition is possible for each reachable states
                         for transition in transitionToFiltered:
                             transitionCount = 0
                             transitionCount = transitionTo.count(transition)
+
                             console.print(
-                                f"[green]─>[/green]Their is {transitionCount} transitions possibles to go to {transition}"
+                                f"   └─ [bold]{transition}[/bold]: {transitionCount} path(s)"
                             )
                         # ask for wich one want to go (would be manual mode)
                         selectTransition = str(
                             input(
-                                f"Select the following state of the next transition you want to go (eg: S2): "
+                                f"❓ Select the next state to transition to (e.g. S2): "
                             )
                         )
                         # Check if the choice is correct and if yes start to apply
                         if selectTransition in transitionToFiltered:
                             console.print(
-                                f"[green]✔️ You selected a valid transition: {selectTransition}[/green]"
+                                f"[green]✔️  You selected a valid transition: {selectTransition}[/green]"
                             )
                             possibleInputMultiple = []
                             selectTransitionCount = 0
@@ -102,16 +107,18 @@ def displayFSM(machines):
                             # if their is multiple way to do the transition -> so it mean multiple input to change to the same state
                             if selectTransitionCount > 1:
                                 # show what possible input is available
+                                console.print(f"   └─ Possible inputs:")
                                 for availableInput in possibleInputMultiple:
+
                                     console.print(
-                                        f"[green]─>[/green] possible with inputs {availableInput}"
+                                        f"    └─ [green]{availableInput}[/green]"
                                     )
                                 # so until he choose one correct input
                                 while True:
                                     # ask wich input he want
                                     selectOfMultipleTransition = str(
                                         input(
-                                            f"Their are multiple way to go to {selectTransition} Select the following transition you want to use by their input (eg: a+):"
+                                            f"❓ Multiple paths to S2 — select input (e.g. +a): "
                                         )
                                     )
                                     # check if it is a correct input if yes it will apply it and move on
@@ -120,15 +127,20 @@ def displayFSM(machines):
                                         in possibleInputMultiple
                                     ):
                                         console.print(
-                                            f"[green]✔️ You selected a valid inputs: {selectOfMultipleTransition}[/green]"
+                                            f"[green]✔️  You selected a valid inputs: {selectOfMultipleTransition}[/green]"
                                         )
-
-                                        console.print(
-                                            "will be added in the channel of the machine"
-                                        )  # channel add it
                                         data["channel"].append(
                                             selectOfMultipleTransition
                                         )
+                                        tmp = data["channel"]
+                                        console.print(
+                                            f"├─ Applied the transistion selected"
+                                        )
+
+                                        console.print(
+                                            f"📥 Channel: [green]{tmp}[/green]"
+                                        )
+                                        type = 3
                                         break
                                     else:
                                         # here it mean was not a correct input
@@ -137,19 +149,23 @@ def displayFSM(machines):
                                         )
                             # it mean that the state choosen have only one input available
                             else:
-                                console.print(
-                                    f"we use the only input available {possibleInputMultiple}"
-                                )
-                                console.print(
-                                    "will be added in the channel of the machine"
-                                )
-                                data["channel"].append(possibleInputMultiple)
+                                if type != 3:
+                                    console.print(
+                                        f"we use the only input available {possibleInputMultiple}"
+                                    )
 
-                            # for case (one input/multiple input) when choosen apply the choice
-                            focusState = selectTransition
-                            data["actual_state"] = selectTransition
-                            test = data["actual_state"]
-                            console.print(f"actual_state: {test}")
+                                    data["channel"].append(possibleInputMultiple[0])
+                                    tmp = data["channel"]
+
+                                    # for case (one input/multiple input) when choosen apply the choice
+                                    focusState = selectTransition
+                                    data["actual_state"] = selectTransition
+                                    # tmp = data["actual_state"]
+                                    # console.print(f"actual_state: {tmp}")
+                                    console.print(
+                                        f"├─ Applied the transistion selected"
+                                    )
+                                    console.print(f"📥 Channel: [green]{tmp}[/green]")
 
                         else:
                             # here mean that the state choosen is not correct
@@ -159,20 +175,26 @@ def displayFSM(machines):
 
                     # when you have only one transition available it do automaticelly
                     else:
-                        focusState = transitionTo[0]
-                        data["actual_state"] = focusState
-                        tmp = data["actual_state"]
-                        console.print(f"actual_state: {tmp} {focusState}")
-                        data["channel"].append(possibleInput[0])
+                        if type != 2 or type != 3:
+                            focusState = transitionTo[0]
+                            data["actual_state"] = focusState
+                            # tmp = data["actual_state"]
+                            # console.print(f"actual_state: {tmp} {focusState}")
+                            data["channel"].append(possibleInput[0])
+                            tmp = data["channel"]
+                            console.print(f"├─ Applied the only transistion available")
+                            console.print(f"📥 Channel: [green]{tmp}[/green]")
 
-                console.print(machines)
+                # console.print(machines)
 
                 transitionTo = []
                 transitionToDisplay = []
                 possibleInput = []
-                i = i + 1
 
-                console.print(f"the focus state is [orange1]{focusState}[/orange1]")
+                # console.print(f"j is {j}")
+                # console.print(f"all state {allStates}")
+
+                console.print(f"\n🔸 Current state: [orange1]{focusState}[/orange1]")
 
                 # console.print(f"here allstates {allStates} and try to remove {focusState}")
 
@@ -186,7 +208,7 @@ def displayFSM(machines):
                 # console.print(f"[red]⚠️ '{focusState}' not found in {allStates}[/red]")
 
                 for transition in transitions:
-                    # search wich transition is available, by creating 1. a list of reachable state 2. and possibleInput just for display purpose
+                    # search wich transition is available, by creating 1. a list of reachable state 2. and possibleInput use to save input when only one transition
                     if transition.get("from") == focusState:
                         transitionToDisplay.append(
                             f"{transition.get('to')} with {transition.get('input')}"
@@ -196,31 +218,44 @@ def displayFSM(machines):
 
                 # when is the last state so if the fsm is infinite it should go back to initalState
                 if len(allStates) == 0:
+
                     console.print(
-                        f"[orange1]╰─>[/orange1] For {focusState} it can [orange1] go back to inital states [/orange1]{transitionToDisplay} so the possible input are {possibleInput}"
+                        f"├─ Available transitions: [italic](can go back to intial states)[/italic]"
                     )
+
+                    for t in transitionToDisplay:
+                        state, input_val = t.split(" with ")
+                        console.print(
+                            f"│   └─ [green]{state}[/green] via input [green]{input_val}[/green]"
+                        )
+
                 # it show all the next avalaible transition multiple or single
                 else:
-                    console.print(
-                        f"[orange1]╰─>[/orange1] For {focusState}  it can go to  {transitionToDisplay} so the possible input are {possibleInput}"
-                    )
+                    console.print(f"├─ Available transitions:")
+
+                    for t in transitionToDisplay:
+                        state, input_val = t.split(" with ")
+                        console.print(
+                            f"│   └─ [green]{state}[/green] via input [green]{input_val}[/green]"
+                        )
 
                 # console.print(allStates)
 
+                # till infinity
+                i = i + 1
                 j = j - 1
 
-                # till infinity
-
                 if j == 0:
-                    continueSimulation = str(
-                        input(
-                            "Continue the simulation (y)/(n) -> go to next machine or stop if none is left): "
-                        )
+                    tmp = data["actual_state"]
+                    console.print(f"acutual state {tmp} and inital {initialState}")
+                    console.print("\n❓ Continue the simulation? (y/n):", style="bold")
+                    console.print(
+                        "(will go to next machine or stop if none is left)",
+                        style="italic dim",
                     )
+                    continueSimulation = input("> ")
                     if continueSimulation == "y":
-                        print("hey", initialState)
                         focusState = initialState
-                        console.print(saveAllStates)
                         allStates = saveAllStates.copy()
                         allStates.remove(focusState)  # Remove 'S1' from wherever it is
                         allStates.insert(0, focusState)  # Reinsert 'S1' at index 0
