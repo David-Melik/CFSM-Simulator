@@ -1,6 +1,6 @@
 Machine A:
   Initial_global_state:
-    - "S1"
+    - "S2"
   States:
     - "S1"
     - "S2"
@@ -23,7 +23,11 @@ Machine B:
     - from: "S1"
       to: "S2"
       input: "+R"
-      event: "Recving signal R"
+      event: "Receving signal R"
+    - from: "S1"
+      to: "S2"
+      input: "-B"
+      event: "Sending signal B"
     - from: "S2"
       to: "S1"
       input: "-A"

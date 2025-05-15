@@ -10,3 +10,8 @@ step 2
 > and then coninue till want to stop
 
 
+in function of what transition is available 
+    -> display it 
+    -> and do it
+
+restart until we come a back to the inital state

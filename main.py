@@ -386,10 +386,11 @@ def main():
             protocol_transitions_tuple = protocol_read(args.protocol)
             machines_tuple = settings_read(args.settings)
             machines_tuple = update_machine_file(machines_tuple)
+            display_function(machines_tuple)
 
-            displayFSM(machines_tuple)
+    #            displayFSM(machines_tuple)
 
-        # lauch_simulation(machines_tuple, protocol_transitions_tuple)
+    # lauch_simulation(machines_tuple, protocol_transitions_tuple)
 
     except ValueError as e:
         # Catch invalid file extension or other ValueErrors
