@@ -1,11 +1,18 @@
 from rich.console import Console, Group
 from rich.layout import Layout
 from rich.panel import Panel
+from rich.columns import Columns
 from rich.text import Text
 from rich.align import Align
 from rich.table import Table
+from rich import padding, print
+from rich.layout import Layout
 import time
 import traceback
+
+from rich.live import Live
+from rich.layout import Layout
+import time
 
 
 console = Console()
@@ -281,53 +288,45 @@ def changeStateFSM(machine, states, settings):
 
 
 def display_function(machines_tuple):
-    numberMachine = len(machines_tuple)
+    try:
+        numberMachine = len(machines_tuple)
+        panel1 = Panel("Left Panel Content", title="Left", border_style="blue")
+        panel2 = Panel("Right Panel Content", title="Right", border_style="green")
 
-    # console = Console(width=80)
-    layout = Layout()  # Create the layout
-    numberOfRow = 1
-    # Split the layout into an upper and lower part
-    layouts = [Layout(name=f"Row{i}") for i in range(1, numberOfRow + 1)]
-    layout.split_column(*layouts)  # Now split the column using the generated layouts
+        # Print side-by-side
+        console.print(Columns([panel1, panel2]))
 
-    console.print(numberOfRow)
+        while True:
+            layout = Layout()
+            numberOfRow = 3
+            layouts = [Layout(name=f"Row{i}") for i in range(1, numberOfRow + 1)]
+            layout.split_column(*layouts)
 
-    for i in range(1, numberOfRow + 1):
-        # Split the "lower" part into left and right columns
-        layout[f"Row{i}"].size = 10
-        layout[f"Row{i}"].split_row(
-            Layout(name="left"),
-            Layout(name="center"),
-            Layout(name="right"),
-        )
-    j = 0
-    for i in range(1, numberOfRow + 1):
-        if j != numberMachine:
-            machine_name, machine_state = machines_tuple[j]
+            layout[f"Row{1}"].split_row(
+                Layout(name="left"),
+                Layout(name="center"),
+                Layout(name="right"),
+            )
+
+            i = 1
             layout[f"Row{i}"]["left"].update(
                 Panel(
-                    align_text(
-                        f"[bold blue]Machine A[/bold blue]\n[bold yellow]state[/bold yellow]: hey1"
-                    ),
-                    padding=(0, 0),
+                    f"[bold blue]Machine A[/bold blue]\n[bold yellow]state[/bold yellow]: hey1",
                     title="FSM 2",
                 )
             )
-            j = j + 1
             layout[f"Row{i}"]["center"].update(
                 Align.center(
                     Group(
                         Panel(
-                            align_text_right(f"[bold yellow]state[/bold yellow]: hey1"),
+                            f"[bold yellow]state[/bold yellow]: hey1",
                             title="Channel A <- B",
-                            padding=(0, 0),
                             border_style="yellow",
                             height=4,
                             width=30,
                         ),
                         Panel(
-                            align_text_left(f"[bold yellow]state[/bold yellow]: hey2"),
-                            padding=(0, 0),
+                            f"[bold yellow]state[/bold yellow]: hey2",
                             title="Channel A -> B",
                             border_style="yellow",
                             height=4,
@@ -337,36 +336,33 @@ def display_function(machines_tuple):
                     vertical="middle",
                 )
             )
-        if j != numberMachine:
-            machine_name, machine_state = machines_tuple[j]
             layout[f"Row{i}"]["right"].update(
                 Panel(
-                    align_text(
-                        f"[bold blue]Machine B[/bold blue]\n[bold yellow]Actual state[/bold yellow]: hey2\n├─ Available transitions:\n│   └─ S2 via input -R\n│   └─ S1 via input +A"
-                    ),
+                    f"[bold blue]Machine B[/bold blue]\n[bold yellow]Actual state[/bold yellow]: hey2\n├─ Available transitions:\n│   └─ S2 via input -R\n│   └─ S1 via input +A",
                     title="FSM 1",
-                    padding=(0, 0),
                 )
             )
-            j = j + 1
-    if numberMachine < numberOfRow * 2:
-        layout[f"Row{numberOfRow}"]["right"].update(Text(""))
 
-    # layout = Align.center(layout)
-    console.print(layout)
-    # Create the table
-    table = Table(title="FSM Transition Table")
+            table = Table(title="FSM Transition Table")
+            table.add_column("Choice", justify="center", style="cyan", no_wrap=True)
+            table.add_column("FSM", justify="center", style="green")
+            table.add_column("Type", justify="center", style="magenta")
+            table.add_column("Transition", justify="center", style="yellow")
+            table.add_row("1", "Machine A", "Send", "S1 --a--> S2")
+            table.add_row("2", "Machine B", "Receive", "S2 <--a-- S1")
+            table.add_row("3", "Machine A", "Internal", "S2 --b--> S3")
 
-    # Add the columns
-    table.add_column("Choice", justify="center", style="cyan", no_wrap=True)
-    table.add_column("FSM", justify="center", style="green")
-    table.add_column("Type", justify="center", style="magenta")
-    table.add_column("Transition", justify="center", style="yellow")
+            layout[f"Row{2}"].update(table)
 
-    # Add rows (you can generate or loop these dynamically)
-    table.add_row("1", "Machine A", "Send", "S1 --a--> S2")
-    table.add_row("2", "Machine B", "Receive", "S2 <--a-- S1")
-    table.add_row("3", "Machine A", "Internal", "S2 --b--> S3")
+            with Live(layout, refresh_per_second=10, screen=False, console=console):
+                time.sleep(1.5)  # Let layout be visible for a short moment
 
-    # Print the table
-    console.print(table)
+            # Ask the user if they want to continue
+            answer = input("❓ Continue the simulation? (y/n): ").strip().lower()
+            if answer == "n":
+                break
+
+        return True
+    except Exception as e:
+        print("Error:", e)
+        traceback.print_exc()
