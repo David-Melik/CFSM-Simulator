@@ -52,170 +52,212 @@ def align_text_left(text):
 # show every machine withe actual states on !
 def simulation(machines_settings, mode):
     try:
-        option = 0
-        n_run = 1
-        choice_metadata = []
+        stop_simulation = False
+        n_run = 0
 
-        table = Table(title="Possible transitions", box=MINIMAL)
-        table.add_column("Choice", justify="center", style="cyan", no_wrap=True)
-        table.add_column("FSM", justify="center", style="green")
-        table.add_column("Type", justify="center", style="magenta")
-        table.add_column("Transition", justify="center", style="yellow")
+        while stop_simulation == False:
+            option = 0
+            choice_metadata = []
 
-        # add to the table the possibility of transition
-        for actual_machine, data in machines_settings:
+            table = Table(title="Possible transitions", box=MINIMAL)
+            table.add_column("Choice", justify="center", style="cyan", no_wrap=True)
+            table.add_column("FSM", justify="center", style="green")
+            table.add_column("Type", justify="center", style="magenta")
+            table.add_column("Transition", justify="center", style="yellow")
 
-            console.print(f"[bold blue]FSM: {actual_machine}[/bold blue]")
+            # add to the table the possibility of transition
+            for actual_machine, data in machines_settings:
 
-            # initalize
-            transitions = data["Transitions"]
-            machine_names = [name for name, _ in machines_settings]
+                console.print(f"[bold blue]FSM: {actual_machine}[/bold blue]")
 
-            # List of tuples: (channel name, content)
-            channel_info = []
-            for _, data_element in machines_settings:
-                for key, value in data_element.items():
-                    if key.startswith("Channel "):
-                        channel_info.append((key, value))
+                # initalize
+                transitions = data["Transitions"]
+                machine_names = [name for name, _ in machines_settings]
+                channel_info = []
+                for _, data_element in machines_settings:
+                    for key, value in data_element.items():
+                        if key.startswith("Channel "):
+                            channel_info.append((key, value))
 
-            console.print(f"ACTUAL CHANNEL WANT TO REMOVE {actual_machine}")
-            for channel in channel_info[:]:
-                if (
-                    channel[0].startswith((f"Channel {actual_machine} ->"))
-                    or actual_machine not in channel[0]
-                ):
+                console.print(f"ACTUAL CHANNEL WANT TO REMOVE {actual_machine}")
+                for channel in channel_info[:]:
+                    if (
+                        channel[0].startswith((f"Channel {actual_machine} ->"))
+                        or actual_machine not in channel[0]
+                    ):
 
-                    channel_info.remove(channel)
-                    console.print(f"REMOVED {channel}")
+                        channel_info.remove(channel)
+                        console.print(f"REMOVED {channel}")
 
-            # check in all transition
-            for transition in transitions:
+                    console.print(channel)
 
-                if transition.get("from") == data["actual_state"][0]:
+                # List of tuples: (channel name, content)
 
-                    input_val = transition.get("input", "")
+                # check in all transition
+                for transition in transitions:
 
-                    if input_val == "τ":
-                        type_transition = "Silent"
-                        input_content = input_val
-                        option += 1
+                    if transition.get("from") == data["actual_state"][0]:
 
-                        table.add_row(
-                            f"{option }",
-                            f"{actual_machine}",
-                            f"{type_transition}",
-                            f"{transition.get('from')} --{input_content}--> {transition.get('to')}",
-                        )
+                        input_val = transition.get("input", "")
 
-                        choice_metadata.append(
-                            {
-                                "option": option,
-                                "fsm": actual_machine,
-                                "type": type_transition,
-                                "transition": transition,
-                                "input": input_content,
-                            }
-                        )
+                        if input_val == "τ":
+                            type_transition = "Silent"
+                            input_content = input_val
+                            option += 1
 
-                    elif input_val.startswith(("-")) or input_val.startswith(("!")):
-                        console.print("Hey sending signal ADD TO AVAILABLE ACTION")
-                        type_transition = "Send"
-                        input_content = input_val[1:]
-                        option += 1
+                            table.add_row(
+                                f"{option }",
+                                f"{actual_machine}",
+                                f"{type_transition}",
+                                f"{transition.get('from')} --{input_content}--> {transition.get('to')}",
+                            )
 
-                        table.add_row(
-                            f"{option }",
-                            f"{actual_machine}",
-                            f"{type_transition}",
-                            f"{transition.get('from')} --{input_content}--> {transition.get('to')}",
-                        )
+                            choice_metadata.append(
+                                {
+                                    "option": option,
+                                    "fsm": actual_machine,
+                                    "type": type_transition,
+                                    "transition": transition,
+                                    "input": input_content,
+                                }
+                            )
 
-                        choice_metadata.append(
-                            {
-                                "option": option,
-                                "fsm": actual_machine,
-                                "type": type_transition,
-                                "transition": transition,
-                                "input": input_content,
-                            }
-                        )
-                    elif input_val.startswith(("+")) or input_val.startswith(("?")):
-                        console.print("HEY receiving signal")
-                        type_transition = "Receving"
-                        without_first_char = input_val[1:]
-                        input_content = input_val[1:]
+                        elif input_val.startswith(("-")) or input_val.startswith(("!")):
+                            console.print("Hey sending signal ADD TO AVAILABLE ACTION")
+                            type_transition = "Send"
+                            input_content = input_val[1:]
+                            option += 1
 
-                        # Channel Machine B -> Machine A
-                        # [('Channel Machine A -> Machine B', []), ('Channel Machine B -> Machine A', [])]
-                        required_input_val = "-" + input_val[1:]
-                        for channel in channel_info:
-                            console.print(channel)
-                            if channel[1] and channel[1][-1] == required_input_val:
-                                option += 1
+                            table.add_row(
+                                f"{option }",
+                                f"{actual_machine}",
+                                f"{type_transition}",
+                                f"{transition.get('from')} --{input_content}--> {transition.get('to')}",
+                            )
 
-                                table.add_row(
-                                    f"{option}",
-                                    f"{actual_machine}",
-                                    f"{type_transition}",
-                                    f"{transition.get('from')} --{input_content}--> {transition.get('to')}",
-                                )
+                            choice_metadata.append(
+                                {
+                                    "option": option,
+                                    "fsm": actual_machine,
+                                    "type": type_transition,
+                                    "transition": transition,
+                                    "input": input_content,
+                                }
+                            )
+                        elif input_val.startswith(("+")) or input_val.startswith(("?")):
+                            console.print("HEY receiving signal")
+                            type_transition = "Receving"
+                            without_first_char = input_val[1:]
+                            input_content = input_val[1:]
 
-                                choice_metadata.append(
-                                    {
-                                        "option": option,
-                                        "fsm": actual_machine,
-                                        "type": type_transition,
-                                        "transition": transition,
-                                        "input": input_content,
-                                    }
-                                )
+                            # Channel Machine B -> Machine A
+                            # [('Channel Machine A -> Machine B', []), ('Channel Machine B -> Machine A', [])]
+                            required_input_val = input_val[1:]
+                            for channel in channel_info:
+                                console.print(channel)
+                                console.print(required_input_val)
+                                if channel[1] and channel[1][-1] == required_input_val:
+                                    console.print("we find it")
+                                    option += 1
 
-                                # channel[1].pop()
-                                # console.print(f"was pop{channel[1]}")
+                                    table.add_row(
+                                        f"{option}",
+                                        f"{actual_machine}",
+                                        f"{type_transition}",
+                                        f"{transition.get('from')} --{input_content}--> {transition.get('to')}",
+                                    )
 
-                                # console.print(
-                                #    f"change to {data['actual_state'][0]} to {transition.get('to')}"
-                                # )
-                                # data["actual_state"][0] = transition.get("to")
-                                # do the change
+                                    choice_metadata.append(
+                                        {
+                                            "option": option,
+                                            "fsm": actual_machine,
+                                            "type": type_transition,
+                                            "transition": transition,
+                                            "input": input_content,
+                                        }
+                                    )
 
-                        # now have to check if inside their is the sending signal corresponding to the receving signal asked
+                            # now have to check if inside their is the sending signal corresponding to the receving signal asked
 
-                        # List of machine names
+                            # List of machine names
 
-                        # check in the correct channel
+                            # check in the correct channel
 
-        option += 1
-        table.add_row(
-            f"{option}",
-            "---",
-            "Stop simulation",
-            "---",
-        )
-        display_function(machines_settings, table, 1)
-        n_run += 1
-
-        choice = int(input("Choose a action between what is proposed in the table: "))
-
-        if choice == option:
-            console.print("Thank you to use our simulator :)")
-            return True
-        else:
-            selected = next(
-                (item for item in choice_metadata if item["option"] == choice), None
+            option += 1
+            table.add_row(
+                f"{option}",
+                "---",
+                "Stop simulation",
+                "---",
             )
-            if selected["type"] == "Silent":
-                # Just update the state
-                console.print(selected)
+            n_run = n_run + 1
+            console.print(n_run)
+            display_function(machines_settings, table, n_run)
 
-            elif selected["type"] == "Send":
-                # Append to the correct channel
-                console.print("HEY")
-                console.print(selected)
+            choice = int(
+                input("Choose a action between what is proposed in the table: ")
+            )
 
-            elif selected["type"] == "Receving":
-                # Pop from the channel
-                console.print("HEY")
+            if choice == option:
+                console.print("Thank you to use our simulator :)")
+                stop_simulation = True
+            else:
+                channel_info = []
+                for _, data_element in machines_settings:
+                    for key, value in data_element.items():
+                        if key.startswith("Channel "):
+                            channel_info.append((key, value))
+                console.print(f"try to apply {channel_info}")
+                selected = next(
+                    (item for item in choice_metadata if item["option"] == choice), None
+                )
+                if selected["type"] == "Silent":
+                    # Just update the state
+                    console.print(selected)
+                    # {'option': 1, 'fsm': 'Machine A', 'type': 'Send', 'transition': {'from': 'S1', 'to': 'S2', 'input': '-R', 'event': 'Sending signal R'}, 'input': 'R'}
+
+                    for machine_name, data in machines_settings:
+                        if machine_name == selected["fsm"]:
+                            data["actual_state"][0] = selected["transition"]["to"]
+
+                elif selected["type"] == "Send":
+                    # Append to the correct channel
+                    console.print("HEY")
+                    console.print(selected)
+
+                    for channel in channel_info:
+                        console.print(channel)
+                        if channel[0].startswith((f"Channel {selected['fsm']} ->")):
+
+                            channel[1].append(selected["input"])
+                            console.print(f"was added{channel[1]}")
+
+                    for machine_name, data in machines_settings:
+                        if machine_name == selected["fsm"]:
+                            data["actual_state"][0] = selected["transition"]["to"]
+
+                elif selected["type"] == "Receving":
+                    console.print("appy receiving")
+                    # Pop from the channel
+
+                    console.print("HEY")
+                    input_val = selected["transition"]["input"]
+                    required_input_val = input_val[1:]
+
+                    for channel in channel_info[:]:
+
+                        if channel[1] and channel[1][-1] == required_input_val:
+                            channel[1].pop()
+                            console.print(f"was pop{channel[1]}")
+
+                            console.print(
+                                f"change to {data['actual_state'][0]} to {selected['transition']['to']}"
+                            )
+                            for machine_name, data in machines_settings:
+                                if machine_name == selected["fsm"]:
+                                    data["actual_state"][0] = selected["transition"][
+                                        "to"
+                                    ]
 
         # ┼ > ─ ╭ ╰ ╮ ╯
         #
