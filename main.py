@@ -266,11 +266,10 @@ def validate_settings_file(file_path):
 
             for transition in machine_data.get("Transitions", []):
                 input_val = transition.get("input", "")
-                if not input_val.startswith(("+", "-")):
+                if not input_val.startswith(("+", "-", "τ", "!", "?")):
                     raise ValueError(
                         f"❌ Invalid input '{input_val}' in machine '{machine_name}' have to be in Zafiropulo notations"
                     )
-                    return False
 
         # If all checks pass
         return True, "Settings file is valid."

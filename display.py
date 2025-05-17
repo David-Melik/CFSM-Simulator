@@ -53,12 +53,16 @@ def align_text_left(text):
 def simulation(machines_settings, mode):
     try:
         option = 0
+        n_run = 1
+        choice_metadata = []
+
         table = Table(title="Possible transitions", box=MINIMAL)
         table.add_column("Choice", justify="center", style="cyan", no_wrap=True)
         table.add_column("FSM", justify="center", style="green")
         table.add_column("Type", justify="center", style="magenta")
         table.add_column("Transition", justify="center", style="yellow")
 
+        # add to the table the possibility of transition
         for actual_machine, data in machines_settings:
 
             console.print(f"[bold blue]FSM: {actual_machine}[/bold blue]")
@@ -66,8 +70,6 @@ def simulation(machines_settings, mode):
             # initalize
             transitions = data["Transitions"]
             machine_names = [name for name, _ in machines_settings]
-
-            n_run = 1
 
             # List of tuples: (channel name, content)
             channel_info = []
@@ -93,7 +95,29 @@ def simulation(machines_settings, mode):
 
                     input_val = transition.get("input", "")
 
-                    if input_val.startswith(("-")):
+                    if input_val == "τ":
+                        type_transition = "Silent"
+                        input_content = input_val
+                        option += 1
+
+                        table.add_row(
+                            f"{option }",
+                            f"{actual_machine}",
+                            f"{type_transition}",
+                            f"{transition.get('from')} --{input_content}--> {transition.get('to')}",
+                        )
+
+                        choice_metadata.append(
+                            {
+                                "option": option,
+                                "fsm": actual_machine,
+                                "type": type_transition,
+                                "transition": transition,
+                                "input": input_content,
+                            }
+                        )
+
+                    elif input_val.startswith(("-")) or input_val.startswith(("!")):
                         console.print("Hey sending signal ADD TO AVAILABLE ACTION")
                         type_transition = "Send"
                         input_content = input_val[1:]
@@ -105,7 +129,17 @@ def simulation(machines_settings, mode):
                             f"{type_transition}",
                             f"{transition.get('from')} --{input_content}--> {transition.get('to')}",
                         )
-                    elif input_val.startswith(("+")):
+
+                        choice_metadata.append(
+                            {
+                                "option": option,
+                                "fsm": actual_machine,
+                                "type": type_transition,
+                                "transition": transition,
+                                "input": input_content,
+                            }
+                        )
+                    elif input_val.startswith(("+")) or input_val.startswith(("?")):
                         console.print("HEY receiving signal")
                         type_transition = "Receving"
                         without_first_char = input_val[1:]
@@ -126,6 +160,16 @@ def simulation(machines_settings, mode):
                                     f"{transition.get('from')} --{input_content}--> {transition.get('to')}",
                                 )
 
+                                choice_metadata.append(
+                                    {
+                                        "option": option,
+                                        "fsm": actual_machine,
+                                        "type": type_transition,
+                                        "transition": transition,
+                                        "input": input_content,
+                                    }
+                                )
+
                                 # channel[1].pop()
                                 # console.print(f"was pop{channel[1]}")
 
@@ -141,8 +185,38 @@ def simulation(machines_settings, mode):
 
                         # check in the correct channel
 
+        option += 1
+        table.add_row(
+            f"{option}",
+            "---",
+            "Stop simulation",
+            "---",
+        )
         display_function(machines_settings, table, 1)
         n_run += 1
+
+        choice = int(input("Choose a action between what is proposed in the table: "))
+
+        if choice == option:
+            console.print("Thank you to use our simulator :)")
+            return True
+        else:
+            selected = next(
+                (item for item in choice_metadata if item["option"] == choice), None
+            )
+            if selected["type"] == "Silent":
+                # Just update the state
+                console.print(selected)
+
+            elif selected["type"] == "Send":
+                # Append to the correct channel
+                console.print("HEY")
+                console.print(selected)
+
+            elif selected["type"] == "Receving":
+                # Pop from the channel
+                console.print("HEY")
+
         # ┼ > ─ ╭ ╰ ╮ ╯
         #
 
@@ -196,18 +270,12 @@ def display_available_transition(machines_settings, machine_name):
                     transitionTo.append(f"{transition.get('to')}")
                     possibleInput.append(f"{transition.get('input')}")
 
-                # when is the last state so if the fsm is infinite it should go back to initalState
-            if transition.get("to") == data["actual_state"]:
+                    # when is the last state so if the fsm is infinite it should go back to initalState
+                    content_to_print += f"├─ Available transitions:\n"
 
-                content_to_print += f"├─ Available transitions: [italic](can go back to intial states)[/italic]\n"
-
-                # it show all the next avalaible transition multiple or single
-            else:
-                content_to_print += f"├─ Available transitions:\n"
-
-                for t in transitionToDisplay:
-                    state, input_val = t.split(" with ")
-                    content_to_print += f"│   └─ [green]{state}[/green] via input [green]{input_val}[/green]\n"
+                    for t in transitionToDisplay:
+                        state, input_val = t.split(" with ")
+                        content_to_print += f"│   └─ [green]{state}[/green] via input [green]{input_val}[/green]\n"
 
             # if multiple transition is available -> APPLY
             # type 2 and type 3
@@ -246,8 +314,8 @@ def display_function(machines_settings, table, n_run):
 
             # List of tuples: (channel name, content)
             channel_info = []
-            for _, data in machines_settings:
-                for key, value in data.items():
+            for _, data_element in machines_settings:
+                for key, value in data_element.items():
                     if key.startswith("Channel "):
                         channel_info.append((key, value))
 
