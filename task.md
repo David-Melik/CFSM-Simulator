@@ -22,3 +22,5 @@ sens de variation
 formule pour trouver les sens de deriver
 
 
+# Rules
+every input should start with - or + as first character Zafiropulo notations"
