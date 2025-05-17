@@ -12,6 +12,7 @@ from rich import padding, print
 from rich.layout import Layout
 import time
 import traceback
+import random
 
 from rich.live import Live
 from rich.layout import Layout
@@ -193,14 +194,50 @@ def simulation(machines_settings, mode):
             n_run = n_run + 1
             console.print(n_run)
             display_function(machines_settings, table, n_run)
+            choice = -1
 
-            choice = int(
-                input("Choose a action between what is proposed in the table: ")
-            )
+            if option == 1:
+                if n_run == 1:
+                    console.print(
+                        "[red bold]💥 Deadlock detected![/red bold] [yellow]No transitions are possible from the start (initial deadlock).[/yellow]"
+                    )
+                else:
+                    console.print(
+                        "[red bold]💥 Deadlock detected![/red bold] [yellow]No further transitions are possible from the current state.[/yellow]"
+                    )
+
+                console.print("[green]✅ Thank you for using our simulator![/green]")
+                stop_simulation = True
+                break
+
+            elif mode == "S":
+                while choice not in range(1, option + 1):
+                    try:
+                        choice = int(
+                            input(
+                                "Choose an action between what is proposed in the table: "
+                            )
+                        )
+                        if choice not in range(1, option + 1):
+                            console.print(
+                                f"[red]Invalid choice. Please select a number between 1 and {option}.[/red]"
+                            )
+                    except ValueError:
+                        console.print(
+                            "[red]Invalid input. Please enter a number.[/red]"
+                        )
+            elif mode == "A":
+                # Automatically choose a random action, excluding the stop option
+                time.sleep(0.5)  # 500 milliseconds
+                choice = random.randint(1, option - 1)
+                console.print(
+                    f"[bold cyan]Automatic mode:[/bold cyan] randomly selected choice [green]{choice}[/green]"
+                )
 
             if choice == option:
                 console.print("Thank you to use our simulator :)")
                 stop_simulation = True
+
             else:
                 channel_info = []
                 for _, data_element in machines_settings:
@@ -313,11 +350,11 @@ def display_available_transition(machines_settings, machine_name):
                     possibleInput.append(f"{transition.get('input')}")
 
                     # when is the last state so if the fsm is infinite it should go back to initalState
-                    content_to_print += f"├─ Available transitions:\n"
+            content_to_print += f"├─ Available transitions:\n"
 
-                    for t in transitionToDisplay:
-                        state, input_val = t.split(" with ")
-                        content_to_print += f"│   └─ [green]{state}[/green] via input [green]{input_val}[/green]\n"
+            for t in transitionToDisplay:
+                state, input_val = t.split(" with ")
+                content_to_print += f"│   └─ [green]{state}[/green] via input [green]{input_val}[/green]\n"
 
             # if multiple transition is available -> APPLY
             # type 2 and type 3
