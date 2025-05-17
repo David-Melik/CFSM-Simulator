@@ -9,7 +9,7 @@ Machine A:
       to: "S2"
       input: "-R"
       event: "Sending signal R"
-    - from: "S1"
+    - from: "S2"
       to: "S1"
       input: "+A"
       event: "Receving signal A"

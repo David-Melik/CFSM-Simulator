@@ -15,3 +15,10 @@ in function of what transition is available
     -> and do it
 
 restart until we come a back to the inital state
+
+
+derivation
+sens de variation 
+formule pour trouver les sens de deriver
+
+

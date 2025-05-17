@@ -222,11 +222,19 @@ def settings_read(file_path):
 def update_machine_file(file_path):
     machines = file_path
     updated_machines = []
+
     for name, data in machines:
+
         data["actual_state"] = data[
             "Initial_global_state"
         ]  # put the actual states by the values of the inital states
-        data["channel"] = []
+
+        machine_names_list = [name for name, _ in machines]
+        machine_names_list.remove(name)
+
+        for other_machines_names in machine_names_list:
+            data[f"Channel {name} -> {other_machines_names}"] = []
+
         updated_machines.append((name, data))
 
     # Optional: print to verify
@@ -274,73 +282,20 @@ def read_yaml_file(file_path):
 
 
 # Start the simulation
-def lauch_simulation(machines_tuple, protocol_transitions_tuple):
-    mode = str(input("Select simulation mode (M - Manual | A - Automatic): "))
-    if mode == "M" or mode == "m":
-        print("manual mod work in progress")
+def choose_simulation_mode():
+    while True:
+        mode = str(input("Select simulation mode (S - Step by step | A - Automatic): "))
 
-    elif mode == "A" or mode == "a":
-        print("automatic mode work in proress")
-        display_function(machines_tuple)
-        # here have to check wich transition to choose and wich Tomachine have the required states
+        if mode == "S" or mode == "s":
+            console.print("[green]✔️  Step by step mode selected[/green]")
+            return "S"
 
-        # Randomly select a transition from protocol_transitions_tuple
-        for random_transition in protocol_transitions_tuple:
-            # Extract the transition details
-            initial_global_state = random_transition[0]
-            to_state = random_transition[1]
-            event = random_transition[2]
+        elif mode == "A" or mode == "a":
+            console.print("[green]✔️  Automatic mode selected[/green]")
+            return "A"
 
-            # Print the randomly selected transition
-            # print(f"Random transition: {initial_global_state} -> {to_state}, Event: {event}")
-
-            # Start selecting random machines
-            match_found = False
-            for _ in range(10):  # Limit the number of trials (10 tries)
-                # Select two random machines from machines_tuple
-                machine_name1, machine_state_1 = random.choice(machines_tuple)
-                machine_name2, machine_state_2 = random.choice(machines_tuple)
-                while (
-                    machine_name2 == machine_name1
-                ):  # Ensure the machines are not the same
-                    machine_name2, machine_state_2 = random.choice(machines_tuple)
-
-                # print(f"Machine 1: {machine_name1} with state: {machine_state_1}")
-                # print(f"Machine 2: {machine_name2} with state: {machine_state_2}")
-
-                # Check if machine 2's state matches the 'to_state' of the transition
-                if machine_state_2 == to_state:
-                    # console.print(
-                    #   f"[bold yellow]Match found![/bold yellow] {machine_name2} state matches transition 'to_state': {to_state}"
-                    # )
-                    match_found = True
-                    break  # Break if match is found
-
-                # else:
-                # print("No match. Trying again...")
-
-            # If no match is found after 10 attempts, move to the next transition
-            # if not match_found:
-            # print(
-            #    f"No match found after 10 attempts for transition: {initial_global_state} -> {to_state}. Moving to next transition."
-            # )
-            # continue  # Skip to the next transition
-
-            # If a match is found, perform the action and break out of the transition loop
-            fromMachine = machine_name1
-            toMachine = machine_name2
-
-            break  # Break after processing the transition
-
-        machines_tuple = affect_display(
-            machines_tuple, fromMachine, toMachine, random_transition
-        )
-        # console.print(machines_tuple)
-
-        display_function(machines_tuple)
-    else:
-        console.print("[bold yellow]Please select a valid simulation mode[bold yellow]")
-        lauch_simulation(machines_tuple, protocol_transitions_tuple)
+        else:
+            console.print("[bold red]Please select a valid options[/bold red]")
 
 
 def main():
@@ -384,9 +339,10 @@ def main():
             args.settings
         ):
             protocol_transitions_tuple = protocol_read(args.protocol)
-            machines_tuple = settings_read(args.settings)
-            machines_tuple = update_machine_file(machines_tuple)
-            display_function(machines_tuple)
+            machines_settings = settings_read(args.settings)
+            machines_settings = update_machine_file(machines_settings)
+            mode = choose_simulation_mode()
+            simulation(machines_settings, mode)
 
     #            displayFSM(machines_tuple)
 

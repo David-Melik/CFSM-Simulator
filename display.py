@@ -1,4 +1,6 @@
 from rich.console import Console, Group
+from rich.box import *
+from rich.rule import Rule
 from rich.layout import Layout
 from rich.panel import Panel
 from rich.columns import Columns
@@ -47,8 +49,19 @@ def align_text_left(text):
 
 
 # show every machine withe actual states on !
-def displayFSM(machines):
+def simulation(machines, mode):
     try:
+
+        table = Table(title="FSM Transition Table", box=MINIMAL)
+        table.add_column("Choice", justify="center", style="cyan", no_wrap=True)
+        table.add_column("FSM", justify="center", style="green")
+        table.add_column("Type", justify="center", style="magenta")
+        table.add_column("Transition", justify="center", style="yellow")
+        table.add_row("1", "Machine A", "Send", "S1 --a--> S2")
+        table.add_row("2", "Machine B", "Receive", "S2 <--a-- S1")
+        table.add_row("3", "Machine A", "Internal", "S2 --b--> S3")
+        display_function(machines, table, 1)
+
         for machine, data in machines:
 
             console.print(f"[bold blue]FSM: {machine}[/bold blue]")
@@ -287,82 +300,163 @@ def changeStateFSM(machine, states, settings):
 # ----------------------------
 
 
-def display_function(machines_tuple):
+def display_available_transition(machines_settings, machine_name):
+    content_to_print = ""
+
+    for name, data in machines_settings:
+        if name == machine_name:
+
+            inital_global_state = (data.get("Initial_global_state", []),)
+            all_states = (data.get("States", []),)
+            transitions = data.get("Transitions", [])
+
+            # console.print(transitions)
+            content_to_print += f"[bold blue]FSM: {name}[/bold blue]\n"
+
+            type = 0
+            # type 1 -> one transition was available
+            # type 2 -> multiple transition was available and the selected one has only one input
+            # type 3 -> multiple transition was available and the selected one has multiple inputs available
+
+            # initialize display
+            transitionTo = []
+            transitionToDisplay = []
+            possibleInput = []
+            type = 0
+
+            content_to_print += f"🔸 [bold]Current state:[/bold] [orange1]{data['actual_state'][0]}[/orange1]\n"
+
+            # console.print(f"here allstates {allStates} and try to remove {focusState}")
+
+            # check in all transition
+            for transition in transitions:
+                # search wich transition is available, by creating 1. a list of reachable state 2. and possibleInput use to save input when only one transition
+                if transition.get("from") == data["actual_state"][0]:
+                    transitionToDisplay.append(
+                        f"{transition.get('to')} with {transition.get('input')}"
+                    )
+                    transitionTo.append(f"{transition.get('to')}")
+                    possibleInput.append(f"{transition.get('input')}")
+
+                # when is the last state so if the fsm is infinite it should go back to initalState
+            if transition.get("to") == data["actual_state"]:
+
+                content_to_print += f"├─ Available transitions: [italic](can go back to intial states)[/italic]\n"
+
+                # it show all the next avalaible transition multiple or single
+            else:
+                content_to_print += f"├─ Available transitions:\n"
+
+                for t in transitionToDisplay:
+                    state, input_val = t.split(" with ")
+                    content_to_print += f"│   └─ [green]{state}[/green] via input [green]{input_val}[/green]\n"
+
+            # if multiple transition is available -> APPLY
+            # type 2 and type 3
+
+        # if len(transitionTo) > 1:
+        #     # remove duplicates
+        #     transitionToFiltered = []
+        #     transitionToFiltered = list(dict.fromkeys(transitionTo))
+        #     content_to_print += (
+        #         f"⚠️  Multiple transitions detected ({len(transitionTo)})\n"
+        #     )
+        #     # check how much transition is possible for each reachable states
+        #     for transition in transitionToFiltered:
+        #         transitionCount = 0
+        #         transitionCount = transitionTo.count(transition)
+
+        #         content_to_print += (
+        #             f"   └─ [bold]{transition}[/bold]: {transitionCount} path(s)\n"
+        #         )
+
+    # ┼ > ─ ╭ ╰ ╮ ╯
+    #
+
+    return content_to_print
+
+
+def display_function(machines_settings, table, n_run):
+
     try:
-        numberMachine = len(machines_tuple)
-        panel1 = Panel("Left Panel Content", title="Left", border_style="blue")
-        panel2 = Panel("Right Panel Content", title="Right", border_style="green")
+        if 2 == len(machines_settings):
 
-        # Print side-by-side
-        console.print(Columns([panel1, panel2]))
+            console.print(Rule(f"Run n°{n_run}"))
 
-        while True:
-            layout = Layout()
-            numberOfRow = 3
-            layouts = [Layout(name=f"Row{i}") for i in range(1, numberOfRow + 1)]
-            layout.split_column(*layouts)
+            # List of machine names
+            machine_names = [name for name, _ in machines_settings]
 
-            layout[f"Row{1}"].split_row(
-                Layout(name="left"),
-                Layout(name="center"),
-                Layout(name="right"),
+            # List of tuples: (channel name, content)
+            channel_info = []
+            for _, data in machines_settings:
+                for key, value in data.items():
+                    if key.startswith("Channel "):
+                        channel_info.append((key, value))
+
+            content_to_print = display_available_transition(
+                machines_settings, machine_names[0]
             )
 
-            i = 1
-            layout[f"Row{i}"]["left"].update(
+            panel1 = Align.center(
                 Panel(
-                    f"[bold blue]Machine A[/bold blue]\n[bold yellow]state[/bold yellow]: hey1",
-                    title="FSM 2",
-                )
-            )
-            layout[f"Row{i}"]["center"].update(
-                Align.center(
-                    Group(
-                        Panel(
-                            f"[bold yellow]state[/bold yellow]: hey1",
-                            title="Channel A <- B",
-                            border_style="yellow",
-                            height=4,
-                            width=30,
-                        ),
-                        Panel(
-                            f"[bold yellow]state[/bold yellow]: hey2",
-                            title="Channel A -> B",
-                            border_style="yellow",
-                            height=4,
-                            width=30,
-                        ),
-                    ),
-                    vertical="middle",
-                )
-            )
-            layout[f"Row{i}"]["right"].update(
-                Panel(
-                    f"[bold blue]Machine B[/bold blue]\n[bold yellow]Actual state[/bold yellow]: hey2\n├─ Available transitions:\n│   └─ S2 via input -R\n│   └─ S1 via input +A",
+                    align_text(content_to_print),
                     title="FSM 1",
-                )
+                    width=50,
+                    height=10,
+                ),
+                vertical="middle",
             )
 
-            table = Table(title="FSM Transition Table")
-            table.add_column("Choice", justify="center", style="cyan", no_wrap=True)
-            table.add_column("FSM", justify="center", style="green")
-            table.add_column("Type", justify="center", style="magenta")
-            table.add_column("Transition", justify="center", style="yellow")
-            table.add_row("1", "Machine A", "Send", "S1 --a--> S2")
-            table.add_row("2", "Machine B", "Receive", "S2 <--a-- S1")
-            table.add_row("3", "Machine A", "Internal", "S2 --b--> S3")
+            content_channel_1 = ", ".join(channel_info[0][1])
+            content_channel_2 = ", ".join(channel_info[1][1])
 
-            layout[f"Row{2}"].update(table)
+            panel2 = Align.center(
+                Group(
+                    Panel(
+                        align_text_left(f"{content_channel_1}"),
+                        title=channel_info[0][0],
+                        border_style="yellow",
+                        height=4,
+                        width=40,
+                    ),
+                    Panel(
+                        align_text_right(f"{content_channel_2}"),
+                        title=channel_info[1][0],
+                        border_style="yellow",
+                        height=4,
+                        width=40,
+                    ),
+                ),
+                vertical="middle",
+            )
 
-            with Live(layout, refresh_per_second=10, screen=False, console=console):
-                time.sleep(1.5)  # Let layout be visible for a short moment
+            content_to_print = display_available_transition(
+                machines_settings, machine_names[1]
+            )
+            panel3 = Align.center(
+                Panel(
+                    align_text(content_to_print),
+                    title="FSM 2",
+                    width=50,
+                    height=10,
+                ),
+                vertical="middle",
+            )
 
-            # Ask the user if they want to continue
-            answer = input("❓ Continue the simulation? (y/n): ").strip().lower()
-            if answer == "n":
-                break
+            panel4 = Align.center(table, vertical="middle")
 
-        return True
+            console.print(Columns([panel1, panel2, panel3], expand=True))
+
+            # Row 2: 1 full-width panel (centered)
+            console.print(Columns([panel4], expand=True))
+
+        if 3 == len(machines_settings):
+            console.print("work in progress")
+
+        if len(machines_settings) != 2 and len(machines_settings) != 3:
+            console.print(len(machines_settings))
+            console.print("do not support that number of FSM")
+
     except Exception as e:
         print("Error:", e)
         traceback.print_exc()
