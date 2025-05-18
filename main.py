@@ -212,7 +212,7 @@ def settings_read(file_path):
             # check if the fsm is infinte or not
             if all(state in listOfto for state in listOfStates) == False:
                 raise ValueError(
-                    f"The FSM ({machine}) is not infinite because one of the states is a deadlock."
+                    f"The FSM '{machine}' is not infinite: some states cannot be reached (no transition leads to them)."
                 )
         # Print the table
         console.print(table_settings)
