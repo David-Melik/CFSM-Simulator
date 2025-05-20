@@ -23,16 +23,6 @@ console = Console()
 
 
 # Helper definition
-def linkSeperation(States, settings):
-    # from "states" check how to is refered
-    return True
-
-
-def even(n):
-    if n % 2 == 0:
-        return True
-    elif n % 2 != 0:
-        return False
 
 
 def align_text(text):
@@ -69,7 +59,7 @@ def simulation(machines_settings, mode):
             # add to the table the possibility of transition
             for actual_machine, data in machines_settings:
 
-                console.print(f"[bold blue]FSM: {actual_machine}[/bold blue]")
+                # console.print(f"[bold blue]FSM: {actual_machine}[/bold blue]")
 
                 # initalize
                 transitions = data["Transitions"]
@@ -80,7 +70,7 @@ def simulation(machines_settings, mode):
                         if key.startswith("Channel "):
                             channel_info.append((key, value))
 
-                console.print(f"ACTUAL CHANNEL WANT TO REMOVE {actual_machine}")
+                # console.print(f"ACTUAL CHANNEL WANT TO REMOVE {actual_machine}")
                 for channel in channel_info[:]:
                     if (
                         channel[0].startswith((f"Channel {actual_machine} ->"))
@@ -88,9 +78,9 @@ def simulation(machines_settings, mode):
                     ):
 
                         channel_info.remove(channel)
-                        console.print(f"REMOVED {channel}")
+                        # console.print(f"REMOVED {channel}")
 
-                    console.print(channel)
+                    # console.print(channel)
 
                 # List of tuples: (channel name, content)
 
@@ -124,7 +114,7 @@ def simulation(machines_settings, mode):
                             )
 
                         elif input_val.startswith(("-")) or input_val.startswith(("!")):
-                            console.print("Hey sending signal ADD TO AVAILABLE ACTION")
+                            # console.print("Hey sending signal ADD TO AVAILABLE ACTION")
                             type_transition = "Send"
                             input_content = input_val[1:]
                             option += 1
@@ -146,7 +136,7 @@ def simulation(machines_settings, mode):
                                 }
                             )
                         elif input_val.startswith(("+")) or input_val.startswith(("?")):
-                            console.print("HEY receiving signal")
+                            # console.print("HEY receiving signal")
                             type_transition = "Receving"
                             without_first_char = input_val[1:]
                             input_content = input_val[1:]
@@ -155,10 +145,10 @@ def simulation(machines_settings, mode):
                             # [('Channel Machine A -> Machine B', []), ('Channel Machine B -> Machine A', [])]
                             required_input_val = input_val[1:]
                             for channel in channel_info:
-                                console.print(channel)
-                                console.print(required_input_val)
+                                # console.print(channel)
+                                # console.print(required_input_val)
                                 if channel[1] and channel[1][-1] == required_input_val:
-                                    console.print("we find it")
+                                    # console.print("we find it")
                                     option += 1
 
                                     table.add_row(
@@ -192,7 +182,6 @@ def simulation(machines_settings, mode):
                 "---",
             )
             n_run = n_run + 1
-            console.print(n_run)
             display_function(machines_settings, table, n_run)
             choice = -1
 
@@ -244,13 +233,13 @@ def simulation(machines_settings, mode):
                     for key, value in data_element.items():
                         if key.startswith("Channel "):
                             channel_info.append((key, value))
-                console.print(f"try to apply {channel_info}")
+                # console.print(f"try to apply {channel_info}")
                 selected = next(
                     (item for item in choice_metadata if item["option"] == choice), None
                 )
                 if selected["type"] == "Silent":
                     # Just update the state
-                    console.print(selected)
+                    # console.print(selected)
                     # {'option': 1, 'fsm': 'Machine A', 'type': 'Send', 'transition': {'from': 'S1', 'to': 'S2', 'input': '-R', 'event': 'Sending signal R'}, 'input': 'R'}
 
                     for machine_name, data in machines_settings:
@@ -259,25 +248,25 @@ def simulation(machines_settings, mode):
 
                 elif selected["type"] == "Send":
                     # Append to the correct channel
-                    console.print("HEY")
-                    console.print(selected)
+                    # console.print("HEY")
+                    # console.print(selected)
 
                     for channel in channel_info:
-                        console.print(channel)
+                        # console.print(channel)
                         if channel[0].startswith((f"Channel {selected['fsm']} ->")):
 
                             channel[1].append(selected["input"])
-                            console.print(f"was added{channel[1]}")
+                            # console.print(f"was added{channel[1]}")
 
                     for machine_name, data in machines_settings:
                         if machine_name == selected["fsm"]:
                             data["actual_state"][0] = selected["transition"]["to"]
 
                 elif selected["type"] == "Receving":
-                    console.print("appy receiving")
+                    # console.print("appy receiving")
                     # Pop from the channel
 
-                    console.print("HEY")
+                    # console.print("HEY")
                     input_val = selected["transition"]["input"]
                     required_input_val = input_val[1:]
 
@@ -285,11 +274,9 @@ def simulation(machines_settings, mode):
 
                         if channel[1] and channel[1][-1] == required_input_val:
                             channel[1].pop()
-                            console.print(f"was pop{channel[1]}")
+                            # console.print(f"was pop{channel[1]}")
 
-                            console.print(
-                                f"change to {data['actual_state'][0]} to {selected['transition']['to']}"
-                            )
+                            # console.print(f"change to {data['actual_state'][0]} to {selected['transition']['to']}")
                             for machine_name, data in machines_settings:
                                 if machine_name == selected["fsm"]:
                                     data["actual_state"][0] = selected["transition"][
@@ -322,7 +309,7 @@ def display_available_transition(machines_settings, machine_name):
             transitions = data.get("Transitions", [])
 
             # console.print(transitions)
-            content_to_print += f"[bold blue]FSM: {name}[/bold blue]\n"
+            # content_to_print += f"[bold blue]FSM: {name}[/bold blue]\n"
 
             type = 0
             # type 1 -> one transition was available
@@ -454,8 +441,6 @@ def display_function(machines_settings, table, n_run):
 
             # Row 2: 1 full-width panel (centered)
             console.print(Columns([panel4], expand=True))
-
-        console.print("work in progress")
 
         console.print(Rule(f"Run n°{n_run}"))
 
