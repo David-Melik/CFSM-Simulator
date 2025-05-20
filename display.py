@@ -45,6 +45,7 @@ def simulation(machines_settings, mode):
     try:
         stop_simulation = False
         n_run = 0
+        automatic_run = 0
 
         while stop_simulation == False:
             option = 0
@@ -58,6 +59,11 @@ def simulation(machines_settings, mode):
 
             # add to the table the possibility of transition
             for actual_machine, data in machines_settings:
+
+                for element_states in range(len(data["States"])):
+                    if data["States"][element_states][0] == data["actual_state"][0]:
+                        data["States"][element_states][1] = 1
+                        console.print(machines_settings)
 
                 # console.print(f"[bold blue]FSM: {actual_machine}[/bold blue]")
 
@@ -89,18 +95,18 @@ def simulation(machines_settings, mode):
 
                     if transition.get("from") == data["actual_state"][0]:
 
-                        input_val = transition.get("input", "")
+                        event_val = transition.get("event", "")
 
-                        if input_val == "τ":
+                        if event_val == "τ":
                             type_transition = "Silent"
-                            input_content = input_val
+                            event_content = event_val
                             option += 1
 
                             table.add_row(
                                 f"{option }",
                                 f"{actual_machine}",
                                 f"{type_transition}",
-                                f"{transition.get('from')} --{input_content}--> {transition.get('to')}",
+                                f"{transition.get('from')} --{event_content}--> {transition.get('to')}",
                             )
 
                             choice_metadata.append(
@@ -109,21 +115,22 @@ def simulation(machines_settings, mode):
                                     "fsm": actual_machine,
                                     "type": type_transition,
                                     "transition": transition,
-                                    "input": input_content,
+                                    "event": event_content,
                                 }
                             )
 
-                        elif input_val.startswith(("-")) or input_val.startswith(("!")):
+                        elif event_val.startswith(("-")) or event_val.startswith(("!")):
                             # console.print("Hey sending signal ADD TO AVAILABLE ACTION")
                             type_transition = "Send"
-                            input_content = input_val[1:]
+                            event_content = event_val[1:]
+                            channel_poiting = transition.get("channel")
                             option += 1
 
                             table.add_row(
                                 f"{option }",
                                 f"{actual_machine}",
                                 f"{type_transition}",
-                                f"{transition.get('from')} --{input_content}--> {transition.get('to')}",
+                                f"{transition.get('from')} --{event_content}--> {transition.get('to')}",
                             )
 
                             choice_metadata.append(
@@ -132,22 +139,23 @@ def simulation(machines_settings, mode):
                                     "fsm": actual_machine,
                                     "type": type_transition,
                                     "transition": transition,
-                                    "input": input_content,
+                                    "event": event_content,
+                                    "channel_pointing": channel_poiting,
                                 }
                             )
-                        elif input_val.startswith(("+")) or input_val.startswith(("?")):
+                        elif event_val.startswith(("+")) or event_val.startswith(("?")):
                             # console.print("HEY receiving signal")
                             type_transition = "Receving"
-                            without_first_char = input_val[1:]
-                            input_content = input_val[1:]
+                            without_first_char = event_val[1:]
+                            event_content = event_val[1:]
 
                             # Channel Machine B -> Machine A
                             # [('Channel Machine A -> Machine B', []), ('Channel Machine B -> Machine A', [])]
-                            required_input_val = input_val[1:]
+                            required_event_val = event_val[1:]
                             for channel in channel_info:
                                 # console.print(channel)
-                                # console.print(required_input_val)
-                                if channel[1] and channel[1][-1] == required_input_val:
+                                # console.print(required_event_val)
+                                if channel[1] and channel[1][-1] == required_event_val:
                                     # console.print("we find it")
                                     option += 1
 
@@ -155,7 +163,7 @@ def simulation(machines_settings, mode):
                                         f"{option}",
                                         f"{actual_machine}",
                                         f"{type_transition}",
-                                        f"{transition.get('from')} --{input_content}--> {transition.get('to')}",
+                                        f"{transition.get('from')} --{event_content}--> {transition.get('to')}",
                                     )
 
                                     choice_metadata.append(
@@ -164,7 +172,7 @@ def simulation(machines_settings, mode):
                                             "fsm": actual_machine,
                                             "type": type_transition,
                                             "transition": transition,
-                                            "input": input_content,
+                                            "event": event_content,
                                         }
                                     )
 
@@ -217,14 +225,48 @@ def simulation(machines_settings, mode):
                         )
             elif mode == "A":
                 # Automatically choose a random action, excluding the stop option
-                time.sleep(0.5)  # 500 milliseconds
+                time.sleep(1)  # 500 milliseconds
+
+                if automatic_run > 15:
+                    automatic_run = 0
+                    try:
+                        user_input = (
+                            input("Do you want to continue the simulation? (y/n): ")
+                            .strip()
+                            .lower()
+                        )
+                        if user_input not in ("y", "n"):
+                            console.print(
+                                "[red]Invalid choice. Please enter 'y' for yes or 'n' for no.[/red]"
+                            )
+                        elif user_input == "n":
+                            console.print(
+                                "[yellow]Simulation stopped by user.[/yellow]"
+                            )
+                            possible_non_executable_state(machines_settings)
+
+                            console.print(
+                                "[bold green]Thank you for using our simulator :)[/bold green]"
+                            )
+                            stop_simulation = True
+                            break  # or return/exit depending on context
+                    except Exception:
+                        console.print(
+                            "[red]Unexpected input. Please enter 'y' or 'n'.[/red]"
+                        )
+
                 choice = random.randint(1, option - 1)
                 console.print(
                     f"[bold cyan]Automatic mode:[/bold cyan] randomly selected choice [green]{choice}[/green]"
                 )
 
+                automatic_run = automatic_run + 1
+
             if choice == option:
-                console.print("Thank you to use our simulator :)")
+                possible_non_executable_state(machines_settings)
+                console.print(
+                    "[bold green]Thank you for using our simulator :)[/bold green]"
+                )
                 stop_simulation = True
 
             else:
@@ -253,9 +295,13 @@ def simulation(machines_settings, mode):
 
                     for channel in channel_info:
                         # console.print(channel)
-                        if channel[0].startswith((f"Channel {selected['fsm']} ->")):
+                        if channel[0].startswith(
+                            (
+                                f"Channel {selected['fsm']} -> {selected['channel_pointing']}"
+                            )
+                        ):
 
-                            channel[1].append(selected["input"])
+                            channel[1].append(selected["event"])
                             # console.print(f"was added{channel[1]}")
 
                     for machine_name, data in machines_settings:
@@ -267,12 +313,12 @@ def simulation(machines_settings, mode):
                     # Pop from the channel
 
                     # console.print("HEY")
-                    input_val = selected["transition"]["input"]
-                    required_input_val = input_val[1:]
+                    event_val = selected["transition"]["event"]
+                    required_event_val = event_val[1:]
 
                     for channel in channel_info[:]:
 
-                        if channel[1] and channel[1][-1] == required_input_val:
+                        if channel[1] and channel[1][-1] == required_event_val:
                             channel[1].pop()
                             # console.print(f"was pop{channel[1]}")
 
@@ -296,6 +342,28 @@ def simulation(machines_settings, mode):
 
 
 # ----------------------------
+def possible_non_executable_state(machines_settings):
+    possible_non_executable_state_list = []
+
+    for name, data in machines_settings:
+        for state_info in data["States"]:
+            state_name, value = state_info
+            if value == 0:
+                possible_non_executable_state_list.append((name, state_name))
+
+    if possible_non_executable_state_list:
+        console.print(
+            "[yellow bold]\n⚠️ Possible non-executable states detected:[/yellow bold]"
+        )
+        for machine_name, state in possible_non_executable_state_list:
+            console.print(
+                f" • FSM [cyan]{machine_name}[/cyan] has state [magenta]{state}[/magenta] set to 0"
+            )
+        console.print(
+            "\n[bold red]❗ These states might be non-executable in the FSMs[/bold red]\n"
+        )
+    else:
+        console.print("[green]✅ All states appear to be executable.[/green]")
 
 
 def display_available_transition(machines_settings, machine_name):
@@ -313,13 +381,13 @@ def display_available_transition(machines_settings, machine_name):
 
             type = 0
             # type 1 -> one transition was available
-            # type 2 -> multiple transition was available and the selected one has only one input
-            # type 3 -> multiple transition was available and the selected one has multiple inputs available
+            # type 2 -> multiple transition was available and the selected one has only one event
+            # type 3 -> multiple transition was available and the selected one has multiple events available
 
             # initialize display
             transitionTo = []
             transitionToDisplay = []
-            possibleInput = []
+            possible_event = []
             type = 0
 
             content_to_print += f"🔸 [bold]Current state:[/bold] [orange1]{data['actual_state'][0]}[/orange1]\n"
@@ -328,20 +396,20 @@ def display_available_transition(machines_settings, machine_name):
 
             # check in all transition
             for transition in transitions:
-                # search wich transition is available, by creating 1. a list of reachable state 2. and possibleInput use to save input when only one transition
+                # search wich transition is available, by creating 1. a list of reachable state 2. and possible_event use to save event when only one transition
                 if transition.get("from") == data["actual_state"][0]:
                     transitionToDisplay.append(
-                        f"{transition.get('to')} with {transition.get('input')}"
+                        f"{transition.get('to')} with {transition.get('event')}"
                     )
                     transitionTo.append(f"{transition.get('to')}")
-                    possibleInput.append(f"{transition.get('input')}")
+                    possible_event.append(f"{transition.get('event')}")
 
                     # when is the last state so if the fsm is infinite it should go back to initalState
             content_to_print += f"├─ Available transitions:\n"
 
             for t in transitionToDisplay:
-                state, input_val = t.split(" with ")
-                content_to_print += f"│   └─ [green]{state}[/green] via input [green]{input_val}[/green]\n"
+                state, event_val = t.split(" with ")
+                content_to_print += f"│   └─ [green]{state}[/green] via event [green]{event_val}[/green]\n"
 
             # if multiple transition is available -> APPLY
             # type 2 and type 3
@@ -464,7 +532,7 @@ def display_function(machines_settings, table, n_run):
             panel = Align.center(
                 Panel(
                     align_text(content_to_print),
-                    title=f"FSM {element + 1}",
+                    title=f"FSM {element + 1} ({machine_names[element]})",
                     width=50,
                     height=10,
                 ),

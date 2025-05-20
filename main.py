@@ -29,7 +29,7 @@ def settings_read(file_path):
         table_settings.add_column("Machine name", style="dim", width=12)
         table_settings.add_column("Inital global state")
         table_settings.add_column("All possible state", style="dim", width=20)
-        table_settings.add_column("Transition (Event name | input | change of states)")
+        table_settings.add_column("Transition (Event | change of states)")
 
         for machine, machine_data in content.items():
             # Initialise
@@ -63,7 +63,6 @@ def settings_read(file_path):
                     row_content.append("")
 
                 transition_info.append(transition.get("event", "N/A"))
-                transition_info.append(transition.get("input", "N/A"))
                 transition_info.append(
                     f"({transition.get('from')} -> {transition.get('to')})"
                 )
@@ -94,6 +93,10 @@ def update_machine_file(file_path):
 
     for name, data in machines:
 
+        # create All states map for the end of the simulation show possible non executable state
+        updated_states = [[state, 0] for state in data["States"]]
+        data["States"] = updated_states
+
         data["actual_state"] = data[
             "Initial_global_state"
         ]  # put the actual states by the values of the inital states
@@ -122,6 +125,8 @@ def validate_settings_file(file_path):
                 "There must be at least two machines in the settings file."
             )
 
+        all_machine_names = list(content.keys())
+
         # Check that every machine has at least one initial state
         for machine_name, machine_data in content.items():
             if "Initial_global_state" not in machine_data:
@@ -134,10 +139,17 @@ def validate_settings_file(file_path):
                 )
 
             for transition in machine_data.get("Transitions", []):
-                input_val = transition.get("input", "")
-                if not input_val.startswith(("+", "-", "τ", "!", "?")):
+                event_val = transition.get("event", "")
+                channel_content = transition.get("channel", "")
+                if not event_val.startswith(("+", "-", "τ", "!", "?")):
                     raise ValueError(
-                        f"❌ Invalid input '{input_val}' in machine '{machine_name}' have to be in Zafiropulo notations"
+                        f"❌ Invalid event '{event_val}' in FSM '{machine_name}' have to be in Zafiropulo notations"
+                    )
+                other_machines = [m for m in all_machine_names if m != machine_name]
+
+                if channel_content not in other_machines:
+                    raise ValueError(
+                        f"❌ Invalid channel pointer in FSM '{machine_name}': it must point to another machine, excluding itself."
                     )
 
         # If all checks pass
@@ -203,6 +215,7 @@ def main():
         if validate_settings_file(args.settings):
             machines_settings = settings_read(args.settings)
             machines_settings = update_machine_file(machines_settings)
+            console.print(machines_settings)
             mode = choose_simulation_mode()
             simulation(machines_settings, mode)
 

@@ -7,12 +7,12 @@ Machine A:
   Transitions:
     - from: "S1"
       to: "S2"
-      input: "-R"
-      event: "Sending signal R"
+      event: "-R"
+      channel: "Machine B"
     - from: "S2"
       to: "S1"
-      input: "+A"
-      event: "Receving signal A"
+      event: "+A"
+      channel: "Machine C"
 Machine B:
   Initial_global_state:
     - "S1"
@@ -22,9 +22,25 @@ Machine B:
   Transitions:
     - from: "S1"
       to: "S2"
-      input: "+R"
-      event: "Recving signal R"
+      event: "+R"
+      channel: "Machine A"
     - from: "S2"
       to: "S1"
-      input: "-A"
-      event: "Sending signal A"
+      event: "-A"
+      channel: "Machine A"
+
+Machine C:
+  Initial_global_state:
+    - "S2"
+  States:
+    - "S1"
+    - "S2"
+  Transitions:
+    - from: "S1"
+      to: "S2"
+      event: "+R"
+      channel: "Machine B"
+    - from: "S2"
+      to: "S1"
+      event: "-A"
+      channel: "Machine A"
