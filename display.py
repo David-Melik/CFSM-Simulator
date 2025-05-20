@@ -63,7 +63,6 @@ def simulation(machines_settings, mode):
                 for element_states in range(len(data["States"])):
                     if data["States"][element_states][0] == data["actual_state"][0]:
                         data["States"][element_states][1] = 1
-                        console.print(machines_settings)
 
                 # console.print(f"[bold blue]FSM: {actual_machine}[/bold blue]")
 
@@ -363,7 +362,9 @@ def possible_non_executable_state(machines_settings):
             "\n[bold red]❗ These states might be non-executable in the FSMs[/bold red]\n"
         )
     else:
-        console.print("[green]✅ All states appear to be executable.[/green]")
+        console.print(
+            "[green]✅ Non-executable error is not present in this design.\n[/green]"
+        )
 
 
 def display_available_transition(machines_settings, machine_name):

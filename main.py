@@ -215,7 +215,6 @@ def main():
         if validate_settings_file(args.settings):
             machines_settings = settings_read(args.settings)
             machines_settings = update_machine_file(machines_settings)
-            console.print(machines_settings)
             mode = choose_simulation_mode()
             simulation(machines_settings, mode)
 
