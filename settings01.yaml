@@ -12,7 +12,7 @@ Machine A:
     - from: "S2"
       to: "S1"
       event: "+A"
-      channel: "Machine C"
+      channel: "Machine B"
 Machine B:
   Initial_global_state:
     - "S1"
@@ -24,22 +24,6 @@ Machine B:
       to: "S2"
       event: "+R"
       channel: "Machine A"
-    - from: "S2"
-      to: "S1"
-      event: "-A"
-      channel: "Machine A"
-
-Machine C:
-  Initial_global_state:
-    - "S2"
-  States:
-    - "S1"
-    - "S2"
-  Transitions:
-    - from: "S1"
-      to: "S2"
-      event: "+R"
-      channel: "Machine B"
     - from: "S2"
       to: "S1"
       event: "-A"

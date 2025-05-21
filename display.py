@@ -170,7 +170,8 @@ def simulation(machines_settings, mode):
                             for channel in channel_info:
                                 # console.print(channel)
                                 # console.print(required_event_val)
-                                if channel[1] and channel[1][-1] == required_event_val:
+                                # check in FIFO so first element
+                                if channel[1] and channel[1][0] == required_event_val:
                                     # console.print("we find it")
                                     option += 1
 
@@ -332,8 +333,9 @@ def simulation(machines_settings, mode):
 
                     for channel in channel_info[:]:
 
-                        if channel[1] and channel[1][-1] == required_event_val:
-                            channel[1].pop()
+                        # in fifo mode
+                        if channel[1] and channel[1][0] == required_event_val:
+                            channel[1].pop(0)
                             # console.print(f"was pop{channel[1]}")
 
                             # console.print(f"change to {data['actual_state'][0]} to {selected['transition']['to']}")
@@ -455,7 +457,7 @@ def display_available_transition(machines_settings, machine_name):
 def display_function(machines_settings, table, n_run):
 
     try:
-        if 54 == len(machines_settings):
+        if 2 == len(machines_settings):
 
             console.print(Rule(f"Run n°{n_run}"))
 
@@ -525,63 +527,66 @@ def display_function(machines_settings, table, n_run):
 
             # Row 2: 1 full-width panel (centered)
             console.print(Columns([panel4], expand=True))
+        else:
 
-        console.print(Rule(f"Run n°{n_run}"))
+            console.print(Rule(f"Run n°{n_run}"))
 
-        # List of machine names
-        machine_names = [name for name, _ in machines_settings]
+            # List of machine names
+            machine_names = [name for name, _ in machines_settings]
 
-        # List of tuples: (channel name, content)
-        channel_info = []
-        for _, data_element in machines_settings:
-            for key, value in data_element.items():
-                if key.startswith("Channel "):
-                    channel_info.append((key, value))
+            # List of tuples: (channel name, content)
+            channel_info = []
+            for _, data_element in machines_settings:
+                for key, value in data_element.items():
+                    if key.startswith("Channel "):
+                        channel_info.append((key, value))
 
-        panels = []
+            panels = []
 
-        for element in range(len(machines_settings)):
-            content_to_print = display_available_transition(
-                machines_settings, machine_names[element]
-            )
+            for element in range(len(machines_settings)):
+                content_to_print = display_available_transition(
+                    machines_settings, machine_names[element]
+                )
 
-            panel = Align.center(
-                Panel(
-                    align_text(content_to_print),
-                    title=f"FSM {element + 1} ({machine_names[element]})",
-                    width=50,
-                    height=10,
-                ),
-                vertical="middle",
-            )
+                panel = Align.center(
+                    Panel(
+                        align_text(content_to_print),
+                        title=f"FSM {element + 1} ({machine_names[element]})",
+                        width=50,
+                        height=10,
+                    ),
+                    vertical="middle",
+                )
 
-            panels.append(panel)
+                panels.append(panel)
 
-        channel_panels = []
+            channel_panels = []
 
-        for name, content in channel_info:
-            formatted_content = ", ".join(content) if content else "[dim]Empty[/dim]"
-            panel = Panel(
-                align_text_left(formatted_content),
-                title=name,
-                border_style="yellow",
-                height=4,
-                width=40,
-            )
-            channel_panels.append(panel)
+            for name, content in channel_info:
+                formatted_content = (
+                    ", ".join(content) if content else "[dim]Empty[/dim]"
+                )
+                panel = Panel(
+                    align_text_left(formatted_content),
+                    title=name,
+                    border_style="yellow",
+                    height=4,
+                    width=40,
+                )
+                channel_panels.append(panel)
 
-        panel4 = Align.center(table, vertical="middle")
+            panel4 = Align.center(table, vertical="middle")
 
-        # Display FSM panels side by side
-        fsm_panel_group = Columns(panels, expand=True)
+            # Display FSM panels side by side
+            fsm_panel_group = Columns(panels, expand=True)
 
-        # Display channel panels below or above (stacked)
-        channel_panel_group = Group(*channel_panels)
+            # Display channel panels below or above (stacked)
+            channel_panel_group = Group(*channel_panels)
 
-        console.print(Group(fsm_panel_group, channel_panel_group))
+            console.print(Group(fsm_panel_group, channel_panel_group))
 
-        # Row 2: 1 full-width panel (centered)
-        console.print(Columns([panel4], expand=True))
+            # Row 2: 1 full-width panel (centered)
+            console.print(Columns([panel4], expand=True))
 
     except Exception as e:
         print("Error:", e)
