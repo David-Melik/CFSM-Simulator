@@ -12,7 +12,6 @@ Machine A:
     - from: "S2"
       to: "S1"
       event: "+A"
-      channel: "Machine B"
 Machine B:
   Initial_global_state:
     - "S1"
@@ -23,7 +22,6 @@ Machine B:
     - from: "S1"
       to: "S2"
       event: "+R"
-      channel: "Machine A"
     - from: "S2"
       to: "S1"
       event: "-A"

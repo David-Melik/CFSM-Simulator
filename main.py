@@ -137,8 +137,24 @@ def validate_settings_file(file_path):
                 raise ValueError(
                     f"Machine '{machine_name}' has no initial state defined."
                 )
+            # Check that 'Transitions' exists and is not empty
+            transitions = machine_data.get("Transitions", [])
+            if not transitions:
+                raise ValueError(
+                    f"Machine '{machine_name}' must have at least one transition defined."
+                )
 
             for transition in machine_data.get("Transitions", []):
+
+                if (
+                    "from" not in transition
+                    or "to" not in transition
+                    or "event" not in transition
+                ):
+                    raise ValueError(
+                        f"Machine '{machine_name}' has a transition missing required fields ('from', 'to', 'event')."
+                    )
+
                 event_val = transition.get("event", "")
                 channel_content = transition.get("channel", "")
                 if not event_val.startswith(("+", "-", "τ", "!", "?")):
@@ -150,6 +166,10 @@ def validate_settings_file(file_path):
                     other_machines = [m for m in all_machine_names if m != machine_name]
 
                     if channel_content not in other_machines:
+                        if channel_content == "":
+                            raise ValueError(
+                                f"❌ You should specify a channel to point in to FSM : it must be not empty a sending event need a parameter channel to point to."
+                            )
                         raise ValueError(
                             f"❌ Invalid channel pointer in FSM '{machine_name}': it must point to another machine, excluding itself."
                         )
