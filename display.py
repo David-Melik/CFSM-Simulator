@@ -47,6 +47,22 @@ def simulation(machines_settings, mode):
         n_run = 0
         automatic_run = 0
 
+        if mode == "A":  # set number of automatic run until
+            while True:
+                try:
+                    user_input_number_run = int(
+                        input(
+                            "🔁 Enter how many automatic steps to run before pausing and asking if you want to continue: "
+                        )
+                    )
+                    if user_input_number_run <= 0:
+                        print("⚠️ Please enter a positive number.")
+                    else:
+                        automatic_run_limit = user_input_number_run
+                        break
+                except ValueError:
+                    print("❌ Invalid input. Please enter a valid integer.")
+
         while stop_simulation == False:
             option = 0
             choice_metadata = []
@@ -225,8 +241,9 @@ def simulation(machines_settings, mode):
             elif mode == "A":
                 # Automatically choose a random action, excluding the stop option
                 time.sleep(1)  # 500 milliseconds
+                automatic_run = automatic_run + 1
 
-                if automatic_run > 15:
+                if automatic_run == automatic_run_limit:
                     automatic_run = 0
                     try:
                         user_input = (
@@ -258,8 +275,6 @@ def simulation(machines_settings, mode):
                 console.print(
                     f"[bold cyan]Automatic mode:[/bold cyan] randomly selected choice [green]{choice}[/green]"
                 )
-
-                automatic_run = automatic_run + 1
 
             if choice == option:
                 possible_non_executable_state(machines_settings)
