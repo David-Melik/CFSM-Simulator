@@ -171,7 +171,7 @@ def validate_settings_file(file_path):
                                 f"❌ You should specify a channel to point in to FSM : it must be not empty a sending event need a parameter channel to point to."
                             )
                         raise ValueError(
-                            f"❌ Invalid channel pointer in FSM '{machine_name}': it must point to another machine, excluding itself."
+                            f"❌ FSM '{machine_name}': Sending events require a 'channel' parameter that points to a valid target FSM. This field cannot be empty or not defined."
                         )
 
         # If all checks pass
