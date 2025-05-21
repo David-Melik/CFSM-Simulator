@@ -143,14 +143,16 @@ def validate_settings_file(file_path):
                 channel_content = transition.get("channel", "")
                 if not event_val.startswith(("+", "-", "τ", "!", "?")):
                     raise ValueError(
-                        f"❌ Invalid event '{event_val}' in FSM '{machine_name}' have to be in Zafiropulo notations"
+                        f"❌ Invalid event in FSM '{machine_name}' have to be in Zafiropulo notations"
                     )
-                other_machines = [m for m in all_machine_names if m != machine_name]
 
-                if channel_content not in other_machines:
-                    raise ValueError(
-                        f"❌ Invalid channel pointer in FSM '{machine_name}': it must point to another machine, excluding itself."
-                    )
+                if event_val.startswith(("-", "!")):
+                    other_machines = [m for m in all_machine_names if m != machine_name]
+
+                    if channel_content not in other_machines:
+                        raise ValueError(
+                            f"❌ Invalid channel pointer in FSM '{machine_name}': it must point to another machine, excluding itself."
+                        )
 
         # If all checks pass
         return True, "Settings file is valid."
