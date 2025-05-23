@@ -1,7 +1,0 @@
-First part
-  define machine 
-  define protocol ?
-
-Second part implement channels for each machine
-
-Third part try for 2 machine
