@@ -1,4 +1,4 @@
-# CommunicationProtocolsProject
+# CFSM Simulator
 
 ## Installation
 

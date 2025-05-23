@@ -1,21 +1,13 @@
-from typing_extensions import Required
 from rich.console import Console, Group
 from rich.box import *
 from rich.rule import Rule
-from rich.layout import Layout
 from rich.panel import Panel
 from rich.columns import Columns
-from rich.text import Text
 from rich.align import Align
 from rich.table import Table
-from rich import padding, print
-from rich.layout import Layout
-import time
-import traceback
+from rich import print
 import random
 
-from rich.live import Live
-from rich.layout import Layout
 import time
 
 
@@ -210,9 +202,22 @@ def simulation(machines_settings, mode):
             choice = -1
 
             if option == 1:
-                if n_run == 1:
+
+                channel_info = []
+                for _, data_element in machines_settings:
+                    for key, value in data_element.items():
+                        if key.startswith("Channel "):
+                            channel_info.append((key, value))
+
+                # Vérifie si tous les canaux sont vides
+                if any(len(content) > 0 for _, content in channel_info):
                     console.print(
-                        "[red bold]💥 Deadlock detected![/red bold] [yellow]No transitions are possible from the start (initial deadlock).[/yellow]"
+                        "[red bold]❌ Unspecified reception Error[/red bold] "
+                        "[yellow]The network cannot progress: no FSM has a matching receiving transition.[/yellow]"
+                    )
+                elif n_run == 1:
+                    console.print(
+                        "[red bold]💥 Deadlock channel detected![/red bold] [yellow]No transitions are possible from the start (initial deadlock).[/yellow]"
                     )
                 else:
                     console.print(
@@ -373,7 +378,7 @@ def possible_non_executable_state(machines_settings):
         )
         for machine_name, state in possible_non_executable_state_list:
             console.print(
-                f" • FSM [cyan]{machine_name}[/cyan] has state [magenta]{state}[/magenta] set to 0"
+                f" • FSM [cyan]{machine_name}[/cyan] has state [magenta]{state}[/magenta]"
             )
         console.print(
             "\n[bold red]❗ These states might be non-executable in the FSMs[/bold red]\n"
@@ -478,7 +483,7 @@ def display_function(machines_settings, table, n_run):
             panel1 = Align.center(
                 Panel(
                     align_text(content_to_print),
-                    title="FSM 1",
+                    title=f"FSM 1 ({machine_names[0]})",
                     width=50,
                     height=10,
                 ),
@@ -514,7 +519,7 @@ def display_function(machines_settings, table, n_run):
             panel3 = Align.center(
                 Panel(
                     align_text(content_to_print),
-                    title="FSM 2",
+                    title=f"FSM 2 ({machine_names[1]})",
                     width=50,
                     height=10,
                 ),
